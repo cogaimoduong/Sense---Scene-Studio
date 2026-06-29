@@ -160,7 +160,7 @@ export default function Home() {
       <div className="type-bridge" aria-hidden="true"><span>SCENES</span><i>BETWEEN</i><span>SENSES</span></div>
 
       <section className="about page-pad" id="about">
-        <div className="about-grid"><p className="eyebrow">[ 03 — About studio ]</p><p className="about-copy">{about.split(" ").map((word, i) => <span key={i}>{word}&nbsp;</span>)}</p></div>
+        <div className="about-grid"><p className="eyebrow">[ 03 — About studio ]</p><p className="about-copy">{about.split(" ").map((word, i) => <span key={i}>{word}{" "}</span>)}</p></div>
         <div className="about-meta" data-reveal>
           <div><strong>04</strong><span>Core disciplines</span></div><div><strong>∞</strong><span>Ways to imagine</span></div><div><strong>01</strong><span>Shared vision</span></div>
         </div>
