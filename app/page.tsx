@@ -555,15 +555,27 @@ export default function Home() {
                     className={`project-mobile-media${project.kind === "image" && "fit" in project && project.fit === "contain" ? " is-contained" : ""}`}
                     aria-hidden="true"
                   >
-                    <Image
-                      src={project.kind === "video" ? project.poster : project.src}
-                      alt=""
-                      fill
-                      sizes="(max-width: 760px) calc(100vw - 40px), 1px"
-                    />
-                    {project.kind === "video" && (
-                      <span className="project-mobile-play"><Play size={12} fill="currentColor" /> 08S</span>
+                    {project.kind === "video" ? (
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="auto"
+                        poster={project.poster}
+                        disablePictureInPicture
+                      >
+                        <source src={project.src} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <Image
+                        src={project.src}
+                        alt=""
+                        fill
+                        sizes="(max-width: 760px) calc(100vw - 40px), 1px"
+                      />
                     )}
+                    {project.kind === "video" && <span className="project-mobile-play">AUTO · 08S</span>}
                   </div>
                   <span className="project-play"><Play size={12} fill="currentColor" aria-hidden="true" /></span>
                 </a>

@@ -2406,8 +2406,15 @@ html[lang^="ko"] :is(.statement h2, .section-heading h2, .about-copy, .service-t
     background: #dfe3e8;
   }
 
-  .project-mobile-media img {
+  .project-mobile-media img,
+  .project-mobile-media video {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+  }
+
+  .project-mobile-media video {
+    display: block;
   }
 
   .project-mobile-media.is-contained {
