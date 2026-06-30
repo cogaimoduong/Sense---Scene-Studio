@@ -27,11 +27,33 @@ const serviceMedia = [
 ];
 
 const projects = [
-  { no: "01", year: "2026", image: "/studio-key-visual-v2.png" },
-  { no: "02", year: "2026", image: "/spatial-light-installation.png" },
-  { no: "03", year: "2025", image: "/infinity-key-visual.png" },
-  { no: "04", year: "2025", image: "/studio-key-visual-v2.png" },
-];
+  {
+    no: "01",
+    year: "2026",
+    kind: "video",
+    src: "/projects/virtual360-showreel.mp4",
+    poster: "/projects/virtual360-showreel-poster.jpg",
+  },
+  {
+    no: "02",
+    year: "2026",
+    kind: "image",
+    src: "/projects/booking-panorama.png",
+    fit: "contain",
+  },
+  {
+    no: "03",
+    year: "2026",
+    kind: "image",
+    src: "/projects/coworking-virtual360.jpg",
+  },
+  {
+    no: "04",
+    year: "2026",
+    kind: "image",
+    src: "/projects/real-estate-virtual360.png",
+  },
+] as const;
 
 const cursorCopy: Record<Locale, { view: string; explore: string; hello: string; write: string; lab: string }> = {
   en: { view: "VIEW", explore: "EXPLORE", hello: "HELLO", write: "WRITE", lab: "R&D" },
@@ -195,11 +217,11 @@ function Header({
       <header className="site-header">
         <a className="header-brand brand-target" href="#top" aria-label={t.a11y.home}>
           <Image
-            src="/sense-scene-logo.jpg"
+            src="/sense-scene-logo-dark.png"
             alt="Sense & Scene Studio"
             fill
             priority
-            sizes="120px"
+            sizes="(max-width: 760px) 128px, 170px"
           />
         </a>
 
@@ -469,16 +491,41 @@ export default function Home() {
 
         <section className="projects" id="projects">
           <div className="project-background" aria-hidden="true">
-            {projects.map((project, index) => (
-              <Image
-                key={`${project.no}-${project.image}`}
-                className={index === activeProject ? "is-active" : ""}
-                src={project.image}
-                alt=""
-                fill
-                sizes="100vw"
-              />
-            ))}
+            {projects.map((project, index) => {
+              const mediaClass = [
+                "project-media",
+                project.kind === "image" && "fit" in project && project.fit === "contain" ? "is-contained" : "",
+                index === activeProject ? "is-active" : "",
+              ].filter(Boolean).join(" ");
+
+              if (project.kind === "video") {
+                return (
+                  <video
+                    key={`${project.no}-${project.src}`}
+                    className={mediaClass}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    poster={project.poster}
+                  >
+                    <source src={project.src} type="video/mp4" />
+                  </video>
+                );
+              }
+
+              return (
+                <Image
+                  key={`${project.no}-${project.src}`}
+                  className={mediaClass}
+                  src={project.src}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                />
+              );
+            })}
             <div className="project-overlay" />
           </div>
 
@@ -504,6 +551,20 @@ export default function Home() {
                   <h3>{t.projects.items[index].title}</h3>
                   <p>{t.projects.items[index].type}</p>
                   <time>{project.year}</time>
+                  <div
+                    className={`project-mobile-media${project.kind === "image" && "fit" in project && project.fit === "contain" ? " is-contained" : ""}`}
+                    aria-hidden="true"
+                  >
+                    <Image
+                      src={project.kind === "video" ? project.poster : project.src}
+                      alt=""
+                      fill
+                      sizes="(max-width: 760px) calc(100vw - 40px), 1px"
+                    />
+                    {project.kind === "video" && (
+                      <span className="project-mobile-play"><Play size={12} fill="currentColor" /> 08S</span>
+                    )}
+                  </div>
                   <span className="project-play"><Play size={12} fill="currentColor" aria-hidden="true" /></span>
                 </a>
               ))}

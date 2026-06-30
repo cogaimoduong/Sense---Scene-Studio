@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description: "Sense & Scene is a visual technology studio in Saigon creating CGI, motion, spatial visuals and new-media experiences.",
   metadataBase: new URL("https://senseandscene.studio"),
   icons: {
-    icon: "/sense-scene-logo.jpg",
-    apple: "/sense-scene-logo.jpg",
+    icon: "/sense-scene-logo-dark.png",
+    apple: "/sense-scene-logo-dark.png",
   },
   openGraph: {
     title: "Sense & Scene Studio",
@@ -19,7 +19,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f4f3f0",
+  colorScheme: "dark",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
