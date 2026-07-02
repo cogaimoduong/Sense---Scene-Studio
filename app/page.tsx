@@ -333,6 +333,7 @@ export default function Home() {
   const heroMediaRef = useRef<HTMLDivElement>(null);
   const [activeProject, setActiveProject] = useState(0);
   const [locale, setLocale] = useState<Locale>("en");
+  const languageTransitioningRef = useRef(false);
 
   const t = translations[locale];
   const cursor = cursorCopy[locale];
@@ -354,11 +355,20 @@ export default function Home() {
   const isInitialMount = useRef(true);
 
   const handleLocaleChange = (newLocale: Locale) => {
-    if (newLocale === locale) return;
+    if (newLocale === locale || languageTransitioningRef.current) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      setLocale(newLocale);
+      return;
+    }
+
+    const isMobile = window.matchMedia("(max-width: 760px)").matches;
     const targets = document.querySelectorAll(textSelectors);
     const loader = document.querySelector(".language-loader");
     const loaderParts = document.querySelectorAll(".language-loader span, .language-loader i");
 
+    languageTransitioningRef.current = true;
     document.body.classList.add("is-language-loading");
     gsap.killTweensOf([targets, loader, loaderParts]);
     gsap.set(loader, {
@@ -373,24 +383,31 @@ export default function Home() {
     })
       .to(loader, {
         clipPath: "inset(0% 0% 0% 0%)",
-        duration: 0.42,
+        duration: isMobile ? 0.28 : 0.42,
         ease: "power4.out",
       }, 0)
       .fromTo(
         loaderParts,
-        { yPercent: 90, opacity: 0, filter: "blur(18px)" },
-        { yPercent: 0, opacity: 1, filter: "blur(0px)", duration: 0.46, stagger: 0.055, ease: "power4.out" },
-        0.06,
+        { yPercent: isMobile ? 36 : 90, opacity: 0, filter: `blur(${isMobile ? 6 : 18}px)` },
+        {
+          yPercent: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: isMobile ? 0.26 : 0.46,
+          stagger: isMobile ? 0.018 : 0.055,
+          ease: "power4.out",
+        },
+        isMobile ? 0.03 : 0.06,
       )
       .to(targets, {
-        y: -22,
+        y: isMobile ? -8 : -22,
         opacity: 0,
-        rotateX: 18,
-        scale: 0.985,
-        filter: "blur(12px)",
+        rotateX: isMobile ? 0 : 18,
+        scale: isMobile ? 0.998 : 0.985,
+        filter: `blur(${isMobile ? 3 : 12}px)`,
         transformOrigin: "50% 50% -80px",
-        duration: 0.4,
-        stagger: { each: 0.0025, from: "random" },
+        duration: isMobile ? 0.22 : 0.4,
+        stagger: { each: isMobile ? 0.0002 : 0.0025, from: "random" },
         ease: "power3.in",
       }, 0.03);
   };
@@ -407,10 +424,21 @@ export default function Home() {
     const targets = document.querySelectorAll(textSelectors);
     const loader = document.querySelector(".language-loader");
     const loaderParts = document.querySelectorAll(".language-loader span, .language-loader i");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.matchMedia("(max-width: 760px)").matches;
+
+    if (reduceMotion) {
+      document.body.classList.remove("is-language-loading");
+      languageTransitioningRef.current = false;
+      gsap.set(loader, { autoAlpha: 0, clipPath: "inset(0% 0% 0% 100%)" });
+      gsap.set(targets, { clearProps: "transform,opacity,filter,willChange" });
+      return;
+    }
 
     gsap.timeline({
       onComplete: () => {
         document.body.classList.remove("is-language-loading");
+        languageTransitioningRef.current = false;
         gsap.set(loader, { autoAlpha: 0, clipPath: "inset(0% 0% 0% 100%)" });
         gsap.set(targets, { clearProps: "transform,opacity,filter,willChange" });
       },
@@ -418,11 +446,11 @@ export default function Home() {
       .fromTo(
         targets,
         {
-          y: 30,
+          y: isMobile ? 10 : 30,
           opacity: 0,
-          rotateX: -28,
-          scale: 0.985,
-          filter: "blur(16px)",
+          rotateX: isMobile ? 0 : -28,
+          scale: isMobile ? 0.998 : 0.985,
+          filter: `blur(${isMobile ? 4 : 16}px)`,
           willChange: "transform,opacity,filter",
         },
         {
@@ -431,25 +459,25 @@ export default function Home() {
           rotateX: 0,
           scale: 1,
           filter: "blur(0px)",
-          duration: 0.78,
-          stagger: { each: 0.004, from: "start" },
+          duration: isMobile ? 0.34 : 0.78,
+          stagger: { each: isMobile ? 0.0003 : 0.004, from: "start" },
           ease: "power4.out",
         },
         0.08,
       )
       .to(loaderParts, {
-        yPercent: -80,
+        yPercent: isMobile ? -30 : -80,
         opacity: 0,
-        filter: "blur(14px)",
-        duration: 0.34,
-        stagger: 0.04,
+        filter: `blur(${isMobile ? 4 : 14}px)`,
+        duration: isMobile ? 0.2 : 0.34,
+        stagger: isMobile ? 0.014 : 0.04,
         ease: "power3.in",
       }, 0)
       .to(loader, {
         clipPath: "inset(0% 0% 0% 100%)",
-        duration: 0.48,
+        duration: isMobile ? 0.28 : 0.48,
         ease: "power4.inOut",
-      }, 0.12);
+      }, isMobile ? 0.08 : 0.12);
   }, [locale]);
 
   useEffect(() => {
