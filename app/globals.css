@@ -5103,3 +5103,472 @@ body.settings-open {
 .settings-audio .music-next {
   border-radius: 0;
 }
+
+/* Cinematic welcome and sound gate. */
+body.welcome-open {
+  overflow: hidden;
+}
+
+.welcome-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  padding: clamp(16px, 4vw, 56px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #f7f7fa;
+  background:
+    radial-gradient(circle at 74% 20%, rgba(113, 89, 220, 0.2), transparent 30%),
+    radial-gradient(circle at 22% 78%, rgba(97, 241, 255, 0.09), transparent 28%),
+    rgba(2, 2, 5, 0.96);
+  isolation: isolate;
+  animation: welcome-veil-in 0.7s ease both;
+}
+
+.welcome-gate::before,
+.welcome-gate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.welcome-gate::before {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 8vw),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 10vh);
+  mask-image: linear-gradient(to bottom, transparent, #000 18% 82%, transparent);
+}
+
+.welcome-gate::after {
+  background: linear-gradient(105deg, transparent 0 42%, rgba(97, 241, 255, 0.07) 48%, rgba(143, 121, 255, 0.08) 52%, transparent 59%);
+  background-size: 260% 100%;
+  animation: welcome-light-pass 5.5s linear infinite;
+}
+
+.welcome-cosmos {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.welcome-cosmos i {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 50%;
+  animation: welcome-orbit 18s linear infinite;
+}
+
+.welcome-cosmos i:nth-child(1) {
+  top: -28vw;
+  right: -8vw;
+  width: 62vw;
+  height: 62vw;
+}
+
+.welcome-cosmos i:nth-child(2) {
+  bottom: -34vw;
+  left: -18vw;
+  width: 74vw;
+  height: 74vw;
+  animation-direction: reverse;
+  animation-duration: 24s;
+}
+
+.welcome-cosmos i:nth-child(3) {
+  top: 20%;
+  left: 12%;
+  width: 72vw;
+  height: 42vw;
+  border-color: rgba(143, 121, 255, 0.1);
+  transform: rotate(-12deg);
+  animation-duration: 30s;
+}
+
+.welcome-panel {
+  position: relative;
+  width: min(940px, 100%);
+  min-height: min(650px, calc(100svh - (clamp(16px, 4vw, 56px) * 2)));
+  padding: clamp(30px, 5vw, 68px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 42%),
+    rgba(6, 6, 10, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 38px 120px rgba(0, 0, 0, 0.58), inset 0 0 80px rgba(143, 121, 255, 0.025);
+  backdrop-filter: blur(18px) saturate(1.15);
+  text-align: center;
+  animation: welcome-panel-in 0.9s 0.12s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.welcome-panel::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  pointer-events: none;
+}
+
+.welcome-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20%;
+  width: 16%;
+  background: linear-gradient(90deg, transparent, rgba(97, 241, 255, 0.08), transparent);
+  transform: skewX(-18deg);
+  animation: welcome-panel-scan 4.8s 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.welcome-prelude {
+  position: absolute;
+  top: clamp(24px, 4vw, 42px);
+  color: rgba(220, 220, 228, 0.48);
+  font: 500 8px/1.3 "DM Mono", monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.welcome-heading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcome-heading > p {
+  margin-bottom: clamp(18px, 2.4vw, 30px);
+  color: rgba(232, 232, 238, 0.66);
+  font: 400 clamp(12px, 1.2vw, 16px)/1.2 "Manrope", sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  animation: welcome-copy-in 0.75s 0.46s ease both;
+}
+
+.welcome-heading h1 {
+  max-width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(8px, 1.6vw, 22px);
+  font-family: "Bodoni Moda", "Syne", serif;
+  font-size: clamp(64px, 7.8vw, 118px);
+  font-weight: 800;
+  line-height: 0.72;
+  letter-spacing: -0.075em;
+  text-transform: uppercase;
+  text-shadow: 0 0 44px rgba(97, 241, 255, 0.08), 0 28px 80px rgba(0, 0, 0, 0.48);
+}
+
+.welcome-heading h1 span,
+.welcome-heading h1 i {
+  display: inline-block;
+  opacity: 0;
+  animation: welcome-brand-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.welcome-heading h1 span:first-child {
+  font-style: italic;
+  animation-delay: 0.34s;
+}
+
+.welcome-heading h1 i {
+  color: var(--ice);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 0.54em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 26px rgba(97, 241, 255, 0.4);
+  animation-delay: 0.5s;
+}
+
+.welcome-heading h1 span:last-child {
+  color: rgba(245, 245, 248, 0.92);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.12);
+  animation-delay: 0.42s;
+}
+
+.welcome-heading > strong {
+  margin-top: clamp(22px, 3vw, 38px);
+  color: rgba(225, 225, 232, 0.52);
+  font: 500 clamp(8px, 0.8vw, 11px)/1 "DM Mono", monospace;
+  letter-spacing: 0.64em;
+  text-indent: 0.64em;
+  animation: welcome-copy-in 0.75s 0.72s ease both;
+}
+
+.welcome-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin-top: clamp(34px, 5vh, 58px);
+  color: rgba(225, 225, 232, 0.68);
+  font: 400 clamp(13px, 1.25vw, 17px)/1.65 "Manrope", sans-serif;
+  animation: welcome-copy-in 0.75s 0.82s ease both;
+}
+
+.welcome-actions {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(28px, 4vh, 44px);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  animation: welcome-copy-in 0.75s 0.94s ease both;
+}
+
+.welcome-actions button {
+  min-height: 48px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: rgba(240, 240, 245, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  font: 500 9px/1.2 "DM Mono", monospace;
+  letter-spacing: 0.04em;
+  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.welcome-actions button:first-child {
+  color: #08080b;
+  border-color: var(--ice);
+  background: var(--ice);
+}
+
+.welcome-actions button:hover,
+.welcome-actions button:focus-visible {
+  color: #08080b;
+  border-color: #fff;
+  background: #fff;
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.welcome-panel > small {
+  position: absolute;
+  bottom: clamp(22px, 3vw, 34px);
+  color: rgba(215, 215, 224, 0.34);
+  font: 400 7px/1.4 "DM Mono", monospace;
+  letter-spacing: 0.06em;
+  animation: welcome-copy-in 0.75s 1.02s ease both;
+}
+
+.welcome-particles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  width: min(940px, calc(100% - (clamp(16px, 4vw, 56px) * 2)));
+  height: min(650px, calc(100svh - (clamp(16px, 4vw, 56px) * 2)));
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.welcome-particles i {
+  position: absolute;
+  top: var(--particle-y);
+  left: var(--particle-x);
+  width: var(--particle-size);
+  height: var(--particle-size);
+  border-radius: 50%;
+  background: var(--ice);
+  box-shadow: 0 0 8px rgba(97, 241, 255, 0.9), 0 0 18px rgba(143, 121, 255, 0.65);
+  opacity: 0;
+}
+
+.welcome-gate.is-dissolving {
+  pointer-events: none;
+  animation: welcome-veil-out 1.28s ease forwards;
+}
+
+.welcome-gate.is-dissolving .welcome-panel {
+  animation: welcome-panel-dissolve 1.12s cubic-bezier(0.55, 0, 0.3, 1) forwards;
+}
+
+.welcome-gate.is-dissolving .welcome-particles i {
+  animation: welcome-particle-drift 0.95s var(--particle-delay) cubic-bezier(0.16, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes welcome-veil-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes welcome-veil-out {
+  0%, 62% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+@keyframes welcome-panel-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.975); filter: blur(12px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes welcome-brand-in {
+  from { opacity: 0; transform: translateY(0.72em) rotate(1.5deg); filter: blur(14px); }
+  to { opacity: 1; transform: translateY(0) rotate(0); filter: blur(0); }
+}
+
+@keyframes welcome-copy-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes welcome-panel-scan {
+  0%, 55% { left: -24%; opacity: 0; }
+  68% { opacity: 1; }
+  100% { left: 118%; opacity: 0; }
+}
+
+@keyframes welcome-light-pass {
+  to { background-position: -260% 0; }
+}
+
+@keyframes welcome-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes welcome-panel-dissolve {
+  0%, 18% { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); }
+  62% { opacity: 0.58; transform: scale(1.012); filter: blur(2px) brightness(1.35); }
+  100% { opacity: 0; transform: scale(1.055); filter: blur(20px) brightness(1.8); }
+}
+
+@keyframes welcome-particle-drift {
+  0% { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.2); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--particle-dx), var(--particle-dy), 0) scale(0); }
+}
+
+@media (max-width: 760px) {
+  .welcome-gate {
+    padding: 12px;
+  }
+
+  .welcome-panel {
+    width: 100%;
+    min-height: calc(100svh - 24px);
+    max-height: calc(100svh - 24px);
+    padding: 72px 22px 66px;
+  }
+
+  .welcome-prelude {
+    top: 26px;
+    max-width: calc(100% - 44px);
+    font-size: 6px;
+  }
+
+  .welcome-heading > p {
+    margin-bottom: 24px;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .welcome-heading h1 {
+    flex-wrap: wrap;
+    gap: 5px 9px;
+    font-size: clamp(52px, 17vw, 74px);
+    line-height: 0.82;
+  }
+
+  .welcome-heading h1 i {
+    font-size: 0.48em;
+  }
+
+  .welcome-heading > strong {
+    margin-top: 22px;
+    font-size: 7px;
+  }
+
+  .welcome-copy {
+    margin-top: 34px;
+    font-size: 13px;
+    line-height: 1.58;
+  }
+
+  .welcome-actions {
+    width: 100%;
+    margin-top: 28px;
+    flex-direction: column;
+  }
+
+  .welcome-actions button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .welcome-panel > small {
+    right: 22px;
+    bottom: 24px;
+    left: 22px;
+    font-size: 6px;
+  }
+
+  .welcome-particles {
+    width: calc(100% - 24px);
+    height: calc(100svh - 24px);
+  }
+}
+
+@media (max-height: 680px) and (max-width: 760px) {
+  .welcome-panel {
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .welcome-heading h1 {
+    font-size: clamp(44px, 14vw, 62px);
+  }
+
+  .welcome-copy {
+    margin-top: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-gate,
+  .welcome-panel,
+  .welcome-heading h1 span,
+  .welcome-heading h1 i,
+  .welcome-heading > p,
+  .welcome-heading > strong,
+  .welcome-copy,
+  .welcome-actions,
+  .welcome-panel > small,
+  .welcome-panel::after,
+  .welcome-gate::after,
+  .welcome-cosmos i {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .welcome-gate.is-dissolving {
+    animation: welcome-veil-out 0.45s ease forwards;
+  }
+
+  .welcome-gate.is-dissolving .welcome-panel {
+    animation: none;
+    opacity: 0;
+  }
+
+  .welcome-gate.is-dissolving .welcome-particles {
+    display: none;
+  }
+}

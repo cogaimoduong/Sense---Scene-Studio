@@ -16,9 +16,11 @@ import {
   Repeat1,
   Settings,
   SkipForward,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
@@ -76,6 +78,56 @@ const settingsCopy: Record<Locale, {
   zh: { settings: "设置", description: "语言与背景音乐", language: "语言", languageDescription: "选择界面语言", sound: "声音", soundDescription: "播放、选曲与循环模式", back: "返回", close: "关闭设置" },
   ja: { settings: "設定", description: "言語とサウンド", language: "言語", languageDescription: "表示言語を選択", sound: "サウンド", soundDescription: "再生、選曲、リピート設定", back: "戻る", close: "設定を閉じる" },
   ko: { settings: "설정", description: "언어 및 사운드", language: "언어", languageDescription: "인터페이스 언어 선택", sound: "사운드", soundDescription: "재생, 트랙 및 반복 설정", back: "뒤로", close: "설정 닫기" },
+};
+
+const welcomeCopy: Record<Locale, {
+  prelude: string;
+  welcome: string;
+  body: string;
+  withSound: string;
+  withoutSound: string;
+  note: string;
+}> = {
+  en: {
+    prelude: "A visual technology studio from Saigon",
+    welcome: "Welcome to",
+    body: "Every scene is composed to be felt as much as seen. Would you like to enter with the full soundtrack?",
+    withSound: "Enter with sound",
+    withoutSound: "Continue silently",
+    note: "You can change this anytime in Settings",
+  },
+  vi: {
+    prelude: "Studio công nghệ hình ảnh từ Sài Gòn",
+    welcome: "Chào mừng bạn đến với",
+    body: "Mỗi khung cảnh được tạo nên để cảm nhận trọn vẹn, không chỉ để ngắm nhìn. Bạn có muốn bước vào trải nghiệm cùng âm thanh?",
+    withSound: "Trải nghiệm cùng âm thanh",
+    withoutSound: "Tiếp tục không âm thanh",
+    note: "Bạn có thể thay đổi bất cứ lúc nào trong Cài đặt",
+  },
+  zh: {
+    prelude: "来自西贡的视觉科技工作室",
+    welcome: "欢迎来到",
+    body: "每一个场景不仅为观看而创作，更为感受而生。是否开启完整声音体验？",
+    withSound: "开启声音体验",
+    withoutSound: "静音继续",
+    note: "您可以随时在设置中更改",
+  },
+  ja: {
+    prelude: "サイゴン発のビジュアルテクノロジースタジオ",
+    welcome: "ようこそ",
+    body: "すべてのシーンは、見るだけでなく感じるために構成されています。サウンドとともに体験しますか？",
+    withSound: "サウンドと体験する",
+    withoutSound: "無音で続ける",
+    note: "設定からいつでも変更できます",
+  },
+  ko: {
+    prelude: "사이공의 비주얼 테크놀로지 스튜디오",
+    welcome: "환영합니다",
+    body: "모든 장면은 보는 것을 넘어 온전히 느낄 수 있도록 설계됩니다. 사운드와 함께 경험하시겠습니까?",
+    withSound: "사운드와 함께 시작",
+    withoutSound: "음소거로 계속",
+    note: "설정에서 언제든 변경할 수 있습니다",
+  },
 };
 
 const projects = [
@@ -164,6 +216,82 @@ function LiveClock({ locale }: { locale: Locale }) {
   );
 }
 
+function WelcomeGate({ locale }: { locale: Locale }) {
+  const [visible, setVisible] = useState(true);
+  const [dissolving, setDissolving] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
+  const copy = welcomeCopy[locale];
+
+  useEffect(() => {
+    document.body.classList.toggle("welcome-open", visible);
+    return () => {
+      document.body.classList.remove("welcome-open");
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    };
+  }, [visible]);
+
+  const enterSite = (soundEnabled: boolean) => {
+    if (dissolving) return;
+
+    window.dispatchEvent(new CustomEvent("sense-scene-audio-choice", {
+      detail: { enabled: soundEnabled },
+    }));
+    setDissolving(true);
+    closeTimerRef.current = window.setTimeout(() => setVisible(false), 1280);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className={`welcome-gate ${dissolving ? "is-dissolving" : ""}`} role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <div className="welcome-cosmos" aria-hidden="true"><i /><i /><i /></div>
+
+      <section className="welcome-panel">
+        <span className="welcome-prelude">[ {copy.prelude} ]</span>
+        <div className="welcome-heading">
+          <p>{copy.welcome}</p>
+          <h1 id="welcome-title" aria-label="Sense and Scene Studio">
+            <span>SENSE</span>
+            <i>&amp;</i>
+            <span>SCENE</span>
+          </h1>
+          <strong>STUDIO</strong>
+        </div>
+
+        <p className="welcome-copy">{copy.body}</p>
+
+        <div className="welcome-actions">
+          <button type="button" onClick={() => enterSite(true)}>
+            <Volume2 size={16} aria-hidden="true" />
+            <span>{copy.withSound}</span>
+            <ArrowUpRight size={15} aria-hidden="true" />
+          </button>
+          <button type="button" onClick={() => enterSite(false)}>
+            <VolumeX size={16} aria-hidden="true" />
+            <span>{copy.withoutSound}</span>
+          </button>
+        </div>
+
+        <small>{copy.note}</small>
+      </section>
+
+      <div className="welcome-particles" aria-hidden="true">
+        {Array.from({ length: 84 }, (_, index) => {
+          const style = {
+            "--particle-x": `${(index * 37 + 11) % 100}%`,
+            "--particle-y": `${(index * 61 + 7) % 100}%`,
+            "--particle-dx": `${((index * 43) % 180) - 90}px`,
+            "--particle-dy": `${-40 - ((index * 29) % 190)}px`,
+            "--particle-delay": `${(index % 12) * 0.028}s`,
+            "--particle-size": `${1 + (index % 4)}px`,
+          } as CSSProperties;
+          return <i key={index} style={style} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
 function AudioPlayer({ locale }: { locale: Locale }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldPlayRef = useRef(true);
@@ -202,9 +330,36 @@ function AudioPlayer({ locale }: { locale: Locale }) {
   }, [currentIndex, playAudio]);
 
   useEffect(() => {
+    const handleAudioChoice = (event: Event) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const enabled = (event as CustomEvent<{ enabled: boolean }>).detail.enabled;
+      if (!enabled) {
+        shouldPlayRef.current = false;
+        audio.muted = true;
+        audio.pause();
+        setSoundUnlocked(false);
+        setNeedsGesture(false);
+        return;
+      }
+
+      shouldPlayRef.current = true;
+      audio.muted = false;
+      setSoundUnlocked(true);
+      setNeedsGesture(false);
+      if (audio.paused) void playAudio(true);
+      else setIsPlaying(true);
+    };
+
+    window.addEventListener("sense-scene-audio-choice", handleAudioChoice);
+    return () => window.removeEventListener("sense-scene-audio-choice", handleAudioChoice);
+  }, [playAudio]);
+
+  useEffect(() => {
     const unlockAudio = () => {
       const audio = audioRef.current;
-      if (!audio || !shouldPlayRef.current) return;
+      if (!audio || !shouldPlayRef.current || document.body.classList.contains("welcome-open")) return;
 
       audio.muted = false;
       setSoundUnlocked(true);
@@ -1349,6 +1504,7 @@ export default function Home() {
         <span>SCENE</span>
       </div>
 
+      <WelcomeGate locale={locale} />
       <CustomCursor />
       <Header locale={locale} onLocaleChange={handleLocaleChange} t={t} cursor={cursor} />
 
