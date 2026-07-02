@@ -2,15 +2,24 @@
 
 import Image from "next/image";
 import {
+  ArrowLeft,
   ArrowDown,
   ArrowUpRight,
   Check,
   ChevronDown,
+  Languages,
+  ListMusic,
   Menu,
+  Music2,
+  Pause,
   Play,
+  Repeat1,
+  Settings,
+  SkipForward,
   X,
 } from "lucide-react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
@@ -25,6 +34,49 @@ const serviceMedia = [
   ["/spatial-light-installation.png", "/infinity-key-visual.png"],
   ["/infinity-key-visual.png", "/studio-key-visual-v2.png"],
 ];
+
+const audioTracks = [
+  { title: "The Morning Render", src: "/audio/the-morning-render.mp3" },
+  { title: "Glass Walls At Dawn", src: "/audio/glass-walls-at-dawn.mp3" },
+  { title: "Glass and Gravity", src: "/audio/glass-and-gravity.mp3" },
+  { title: "Glass Horizon", src: "/audio/glass-horizon.mp3" },
+] as const;
+
+type PlaybackMode = "playlist" | "repeat-one";
+
+const audioPlayerCopy: Record<Locale, {
+  soundtrack: string;
+  tapToPlay: string;
+  play: string;
+  pause: string;
+  next: string;
+  chooseTrack: string;
+  sequence: string;
+  repeatOne: string;
+}> = {
+  en: { soundtrack: "Soundtrack", tapToPlay: "Interact to enable sound", play: "Play", pause: "Pause", next: "Next track", chooseTrack: "Choose track", sequence: "Play in order", repeatOne: "Repeat one" },
+  vi: { soundtrack: "Nhạc nền", tapToPlay: "Tương tác để bật âm thanh", play: "Phát", pause: "Tạm dừng", next: "Bài tiếp theo", chooseTrack: "Chọn bài", sequence: "Phát lần lượt", repeatOne: "Lặp một bài" },
+  zh: { soundtrack: "背景音乐", tapToPlay: "互动后开启声音", play: "播放", pause: "暂停", next: "下一首", chooseTrack: "选择曲目", sequence: "顺序播放", repeatOne: "单曲循环" },
+  ja: { soundtrack: "サウンドトラック", tapToPlay: "操作すると音声が有効になります", play: "再生", pause: "一時停止", next: "次の曲", chooseTrack: "曲を選ぶ", sequence: "順番に再生", repeatOne: "1曲リピート" },
+  ko: { soundtrack: "사운드트랙", tapToPlay: "상호작용하면 사운드가 켜집니다", play: "재생", pause: "일시정지", next: "다음 곡", chooseTrack: "트랙 선택", sequence: "순서대로 재생", repeatOne: "한 곡 반복" },
+};
+
+const settingsCopy: Record<Locale, {
+  settings: string;
+  description: string;
+  language: string;
+  languageDescription: string;
+  sound: string;
+  soundDescription: string;
+  back: string;
+  close: string;
+}> = {
+  en: { settings: "Settings", description: "Language and soundtrack", language: "Language", languageDescription: "Choose the interface language", sound: "Sound", soundDescription: "Playback, tracks and repeat mode", back: "Back", close: "Close settings" },
+  vi: { settings: "Cài đặt", description: "Ngôn ngữ và âm thanh", language: "Ngôn ngữ", languageDescription: "Chọn ngôn ngữ giao diện", sound: "Âm thanh", soundDescription: "Phát nhạc, chọn bài và chế độ lặp", back: "Quay lại", close: "Đóng cài đặt" },
+  zh: { settings: "设置", description: "语言与背景音乐", language: "语言", languageDescription: "选择界面语言", sound: "声音", soundDescription: "播放、选曲与循环模式", back: "返回", close: "关闭设置" },
+  ja: { settings: "設定", description: "言語とサウンド", language: "言語", languageDescription: "表示言語を選択", sound: "サウンド", soundDescription: "再生、選曲、リピート設定", back: "戻る", close: "設定を閉じる" },
+  ko: { settings: "설정", description: "언어 및 사운드", language: "언어", languageDescription: "인터페이스 언어 선택", sound: "사운드", soundDescription: "재생, 트랙 및 반복 설정", back: "뒤로", close: "설정 닫기" },
+};
 
 const projects = [
   {
@@ -112,6 +164,206 @@ function LiveClock({ locale }: { locale: Locale }) {
   );
 }
 
+function AudioPlayer({ locale }: { locale: Locale }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const shouldPlayRef = useRef(true);
+  const playAttemptRef = useRef(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [soundUnlocked, setSoundUnlocked] = useState(false);
+  const [needsGesture, setNeedsGesture] = useState(true);
+  const [mode, setMode] = useState<PlaybackMode>("playlist");
+  const copy = audioPlayerCopy[locale];
+  const currentTrack = audioTracks[currentIndex];
+
+  const playAudio = useCallback(async (force = false) => {
+    const audio = audioRef.current;
+    if (!audio || !audio.paused || (playAttemptRef.current && !force)) return;
+
+    playAttemptRef.current = true;
+    try {
+      await audio.play();
+      if (!audio.muted) setNeedsGesture(false);
+    } catch {
+      setIsPlaying(false);
+      setNeedsGesture(true);
+    } finally {
+      playAttemptRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.46;
+    audio.load();
+    if (shouldPlayRef.current) void playAudio();
+  }, [currentIndex, playAudio]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      const audio = audioRef.current;
+      if (!audio || !shouldPlayRef.current) return;
+
+      audio.muted = false;
+      setSoundUnlocked(true);
+      setNeedsGesture(false);
+      if (audio.paused) void playAudio(true);
+      else setIsPlaying(true);
+    };
+    const interactionEvents = [
+      "pointerdown",
+      "pointerup",
+      "mousedown",
+      "touchstart",
+      "touchend",
+      "touchmove",
+      "click",
+      "keydown",
+      "wheel",
+      "scroll",
+    ] as const;
+
+    interactionEvents.forEach((eventName) => {
+      window.addEventListener(eventName, unlockAudio, { capture: true, passive: true });
+    });
+    return () => {
+      interactionEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, unlockAudio, true);
+      });
+    };
+  }, [playAudio]);
+
+  const togglePlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (!soundUnlocked) {
+      shouldPlayRef.current = true;
+      audio.muted = false;
+      setSoundUnlocked(true);
+      setNeedsGesture(false);
+      if (audio.paused) void playAudio(true);
+      else setIsPlaying(true);
+      return;
+    }
+
+    if (audio.paused) {
+      shouldPlayRef.current = true;
+      void playAudio();
+    } else {
+      shouldPlayRef.current = false;
+      audio.pause();
+    }
+  };
+
+  const selectTrack = (index: number) => {
+    shouldPlayRef.current = true;
+
+    if (index === currentIndex) {
+      if (audioRef.current) audioRef.current.currentTime = 0;
+      void playAudio();
+      return;
+    }
+
+    setCurrentIndex(index);
+  };
+
+  const playNext = () => {
+    shouldPlayRef.current = true;
+    setCurrentIndex((index) => (index + 1) % audioTracks.length);
+  };
+
+  return (
+    <>
+      <audio
+        ref={audioRef}
+        src={currentTrack.src}
+        autoPlay
+        muted={!soundUnlocked}
+        preload="auto"
+        loop={mode === "repeat-one"}
+        onPlay={() => setIsPlaying(soundUnlocked)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          if (mode === "playlist") playNext();
+        }}
+      />
+
+      <div className={`music-player ${needsGesture ? "needs-gesture" : ""}`} aria-label={copy.soundtrack}>
+
+      <div className="music-playlist">
+        <div className="music-playlist-head">
+          <span>{copy.chooseTrack}</span>
+          <span>04 TRACKS</span>
+        </div>
+
+        <div className="music-mode" aria-label="Playback mode">
+          <button
+            type="button"
+            className={mode === "playlist" ? "is-active" : ""}
+            aria-pressed={mode === "playlist"}
+            onClick={() => setMode("playlist")}
+          >
+            <ListMusic size={14} aria-hidden="true" /> {copy.sequence}
+          </button>
+          <button
+            type="button"
+            className={mode === "repeat-one" ? "is-active" : ""}
+            aria-pressed={mode === "repeat-one"}
+            onClick={() => setMode("repeat-one")}
+          >
+            <Repeat1 size={14} aria-hidden="true" /> {copy.repeatOne}
+          </button>
+        </div>
+
+        <div className="music-track-list">
+          {audioTracks.map((track, index) => (
+            <button
+              type="button"
+              key={track.src}
+              className={currentIndex === index ? "is-current" : ""}
+              aria-current={currentIndex === index ? "true" : undefined}
+              onClick={() => selectTrack(index)}
+            >
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{track.title}</strong>
+              {currentIndex === index && <i aria-hidden="true">●</i>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="music-player-bar">
+        <button
+          type="button"
+          className="music-play-button"
+          aria-label={isPlaying ? copy.pause : copy.play}
+          onClick={togglePlayback}
+        >
+          {isPlaying ? <Pause size={15} fill="currentColor" aria-hidden="true" /> : <Play size={15} fill="currentColor" aria-hidden="true" />}
+        </button>
+
+        <div className="music-now-playing" aria-live="polite">
+          <span>{needsGesture ? copy.tapToPlay : copy.soundtrack}</span>
+          <strong>{currentTrack.title}</strong>
+        </div>
+
+        <span className={`music-equalizer ${isPlaying ? "is-playing" : ""}`} aria-hidden="true">
+          <i /><i /><i /><i />
+        </span>
+
+        <button type="button" className="music-next" aria-label={copy.next} onClick={playNext}>
+          <SkipForward size={15} fill="currentColor" aria-hidden="true" />
+        </button>
+
+      </div>
+      </div>
+    </>
+  );
+}
+
 function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
@@ -179,71 +431,142 @@ function CustomCursor() {
   );
 }
 
-function LanguageSwitcher({
+function SettingsMenu({
   locale,
   onChange,
-  label,
 }: {
   locale: Locale;
   onChange: (locale: Locale) => void;
-  label: string;
 }) {
   const [open, setOpen] = useState(false);
-  const switcherRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [section, setSection] = useState<"root" | "language" | "audio">("root");
+  const copy = settingsCopy[locale];
   const current = localeOptions.find((option) => option.code === locale) ?? localeOptions[0];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("settings-open", open);
+    return () => document.body.classList.remove("settings-open");
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
 
-    const onPointerDown = (event: PointerEvent) => {
-      if (!switcherRef.current?.contains(event.target as Node)) setOpen(false);
-    };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Escape") return;
+      if (section === "root") setOpen(false);
+      else setSection("root");
     };
 
-    document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, section]);
+
+  const closeSettings = () => {
+    setOpen(false);
+    setSection("root");
+  };
+
+  const dialog = (
+    <div
+      className={`settings-overlay ${open ? "is-open" : ""}`}
+      aria-hidden={!open}
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) closeSettings();
+      }}
+    >
+      <section className="settings-dialog" id="site-settings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <header className="settings-dialog-head">
+          {section !== "root" ? (
+            <button type="button" className="settings-back" aria-label={copy.back} onClick={() => setSection("root")}>
+              <ArrowLeft size={17} aria-hidden="true" />
+            </button>
+          ) : <span className="settings-head-spacer" />}
+
+          <div>
+            <span>{copy.settings}</span>
+            <h2 id="settings-title">
+              {section === "language" ? copy.language : section === "audio" ? copy.sound : copy.description}
+            </h2>
+          </div>
+
+          <button type="button" className="settings-close" aria-label={copy.close} onClick={closeSettings}>
+            <X size={17} aria-hidden="true" />
+          </button>
+        </header>
+
+        <div className="settings-dialog-body">
+          {section === "root" && (
+            <div className="settings-home">
+              <button type="button" onClick={() => setSection("language")}>
+                <span className="settings-card-icon"><Languages size={22} aria-hidden="true" /></span>
+                <span><strong>{copy.language}</strong><small>{copy.languageDescription}</small></span>
+                <i>{current.short}</i>
+                <ChevronDown size={17} aria-hidden="true" />
+              </button>
+
+              <button type="button" onClick={() => setSection("audio")}>
+                <span className="settings-card-icon"><Music2 size={22} aria-hidden="true" /></span>
+                <span><strong>{copy.sound}</strong><small>{copy.soundDescription}</small></span>
+                <ChevronDown size={17} aria-hidden="true" />
+              </button>
+            </div>
+          )}
+
+          {section === "language" && (
+            <div className="settings-language" role="radiogroup" aria-label={copy.language}>
+              {localeOptions.map((option) => (
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={locale === option.code}
+                  className={locale === option.code ? "is-current" : ""}
+                  key={option.code}
+                  onClick={() => {
+                    onChange(option.code);
+                    closeSettings();
+                  }}
+                >
+                  <span className="language-code">{option.short}</span>
+                  <strong>{option.label}</strong>
+                  {locale === option.code && <Check size={15} aria-hidden="true" />}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="settings-audio" hidden={section !== "audio"}>
+            <AudioPlayer locale={locale} />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 
   return (
-    <div className="language-switcher" ref={switcherRef}>
+    <>
       <button
-        className="language-trigger"
+        className="settings-trigger"
         type="button"
-        aria-label={label}
-        aria-haspopup="menu"
+        aria-label={copy.settings}
+        aria-haspopup="dialog"
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
+        aria-controls="site-settings"
+        onClick={() => {
+          setSection("root");
+          setOpen(true);
+        }}
         data-magnetic
       >
-        <span>{current.short}</span>
-        <ChevronDown size={13} aria-hidden="true" />
+        <Settings size={15} aria-hidden="true" />
+        <span>{copy.settings}</span>
       </button>
-
-      <div className={`language-menu ${open ? "is-open" : ""}`} role="menu" aria-label={label}>
-        {localeOptions.map((option) => (
-          <button
-            type="button"
-            role="menuitemradio"
-            aria-checked={locale === option.code}
-            key={option.code}
-            onClick={() => {
-              onChange(option.code);
-              setOpen(false);
-            }}
-          >
-            <span className="language-code">{option.short}</span>
-            <span>{option.label}</span>
-            {locale === option.code && <Check size={14} aria-hidden="true" />}
-          </button>
-        ))}
-      </div>
-    </div>
+      {mounted && createPortal(dialog, document.body)}
+    </>
   );
 }
 
@@ -288,7 +611,7 @@ function Header({
         </nav>
 
         <div className="header-actions">
-          <LanguageSwitcher locale={locale} onChange={onLocaleChange} label={t.a11y.selectLanguage} />
+          <SettingsMenu locale={locale} onChange={onLocaleChange} />
           <a className="header-cta" href="#contact" data-cursor={cursor.hello} data-magnetic>
             {t.nav.startProject} <ArrowUpRight aria-hidden="true" size={14} />
           </a>
