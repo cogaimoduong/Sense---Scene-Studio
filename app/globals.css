@@ -3633,9 +3633,9 @@ body.is-language-loading .scroll-progress {
 }
 
 .hero-title em {
-  color: var(--spark);
+  color: var(--ice);
   font-size: 0.62em;
-  text-shadow: 0 0 26px rgba(97, 241, 255, 0.34);
+  text-shadow: 0 0 26px rgba(203, 215, 255, 0.34);
 }
 
 @media (min-width: 761px) {
@@ -5980,4 +5980,737 @@ body.welcome-open {
   .settings-audio .music-track-list {
     display: block;
   }
+}
+
+/* Stacked brand lockup for the welcome composition. */
+.welcome-heading {
+  display: grid;
+  grid-template-columns: max-content auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  justify-content: start;
+}
+
+.welcome-heading > p {
+  grid-column: 1 / 3;
+  grid-row: 1;
+}
+
+.welcome-heading h1 {
+  position: relative;
+  grid-column: 1;
+  grid-row: 2;
+  width: max-content;
+  max-width: none;
+  display: grid;
+  grid-template-columns: max-content;
+  grid-template-rows: auto auto;
+  justify-items: start;
+  gap: 0;
+  font-size: clamp(76px, 8.6vw, 132px);
+  line-height: 0.7;
+  letter-spacing: -0.07em;
+}
+
+.welcome-heading h1 span:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.welcome-heading h1 span:last-child {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.welcome-heading h1 i {
+  position: absolute;
+  top: 0.02em;
+  right: -0.34em;
+  z-index: 2;
+  color: rgba(239, 237, 244, 0.92);
+  font-size: 0.42em;
+  text-shadow: none;
+}
+
+.welcome-heading > strong {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  margin: 0 0 0 clamp(32px, 4vw, 62px);
+  color: rgba(239, 237, 244, 0.84);
+  font: 400 clamp(26px, 3.15vw, 48px)/0.9 "Manrope", "Syne", sans-serif;
+  letter-spacing: -0.065em;
+  text-indent: 0;
+}
+
+@media (max-width: 760px) {
+  .welcome-heading {
+    width: 100%;
+    grid-template-columns: max-content auto;
+    justify-content: center;
+  }
+
+  .welcome-heading h1 {
+    font-size: clamp(52px, 16vw, 70px);
+    line-height: 0.72;
+  }
+
+  .welcome-heading h1 i {
+    right: -0.31em;
+    font-size: 0.4em;
+  }
+
+  .welcome-heading > strong {
+    margin-left: clamp(21px, 7vw, 32px);
+    font-size: clamp(19px, 6.2vw, 27px);
+    line-height: 0.95;
+  }
+}
+
+@media (max-width: 360px) {
+  .welcome-heading h1 {
+    font-size: clamp(46px, 15vw, 54px);
+  }
+
+  .welcome-heading > strong {
+    margin-left: 19px;
+    font-size: clamp(17px, 5.8vw, 21px);
+  }
+}
+
+/* ─── Hero Brand Lockup: stacked SENSE / & / SCENE with STUDIO right ─── */
+.hero-brand-lockup {
+  display: grid;
+  grid-template-columns: max-content auto;
+  align-items: center;
+}
+
+.hero-title {
+  position: relative;
+  grid-column: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  gap: 0;
+  line-height: 0.86;
+}
+
+.hero-word-sense {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  font-style: italic;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hero-word-scene {
+  grid-column: 1;
+  grid-row: 2;
+  display: block;
+  color: rgba(246, 246, 250, 0.92);
+  white-space: nowrap;
+}
+
+.hero-ampersand {
+  position: absolute;
+  right: -0.22em;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: var(--ice);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 0.62em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 26px rgba(203, 215, 255, 0.34);
+  opacity: 0.88;
+}
+
+.hero-studio {
+  grid-column: 2;
+  align-self: center;
+  margin-left: clamp(22px, 3vw, 48px);
+  color: rgba(225, 225, 232, 0.62);
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: clamp(10px, 1.1vw, 16px);
+  font-weight: 400;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  writing-mode: horizontal-tb;
+}
+
+@media (max-width: 760px) {
+  .hero-brand-lockup {
+    grid-template-columns: max-content auto;
+  }
+
+  .hero-title {
+    font-size: clamp(34px, 10.6vw, 44px) !important;
+    line-height: 0.92;
+    letter-spacing: -0.058em;
+  }
+
+  .hero-word-sense,
+  .hero-word-scene {
+    width: auto !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .hero-ampersand {
+    right: -0.18em;
+    font-size: 0.55em;
+  }
+
+  .hero-studio {
+    margin-left: clamp(14px, 4vw, 22px);
+    font-size: clamp(8px, 2.2vw, 11px);
+    letter-spacing: 0.32em;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-title {
+    font-size: clamp(28px, 8.8vw, 38px) !important;
+  }
+
+  .hero-studio {
+    margin-left: 12px;
+    font-size: 8px;
+    letter-spacing: 0.28em;
+  }
+}
+
+/* ─── Vietnamese: filled solid typography, no outline/hollow strokes ─── */
+html[lang^="vi"] .hero-title {
+  font-family: "Unbounded", "Syne", "Manrope", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  -webkit-text-stroke: 0;
+  text-shadow: 0 4px 60px rgba(142, 119, 237, 0.18);
+}
+
+html[lang^="vi"] .hero-word-sense {
+  font-style: normal;
+  font-weight: 700;
+  color: #f5f5f7;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .hero-word-scene {
+  font-weight: 700;
+  color: #f5f5f7;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .hero-studio {
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+}
+
+html[lang^="vi"] .welcome-heading h1 {
+  font-family: "Unbounded", "Syne", "Manrope", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  -webkit-text-stroke: 0;
+}
+
+html[lang^="vi"] .welcome-heading h1 span:first-child {
+  font-style: normal;
+  -webkit-text-stroke: 0;
+}
+
+html[lang^="vi"] .welcome-heading h1 span:last-child {
+  color: #f5f5f7;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .footer-wordmark {
+  font-family: "Unbounded", "Syne", "Manrope", sans-serif;
+  font-weight: 700;
+  -webkit-text-stroke: 0;
+}
+
+html[lang^="vi"] .footer-wordmark span {
+  color: rgba(245, 245, 247, 0.92);
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .type-bridge span:first-child {
+  font-family: "Unbounded", "Syne", "Manrope", sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  color: #f5f5f7;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .type-bridge span:last-child {
+  font-family: "Unbounded", "Syne", "Manrope", sans-serif;
+  font-weight: 700;
+  color: #f5f5f7;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+/* Vietnamese typography: stable sans display with mono supporting copy. */
+html[lang^="vi"]
+  :is(
+    .statement h2,
+    .section-heading h2,
+    .service-title h3,
+    .project-info h3,
+    .type-bridge span,
+    .about-copy,
+    .lab-copy h2,
+    .footer-top h2,
+    .mobile-menu nav a
+  ) {
+  font-family: "Manrope", "Segoe UI", Arial, sans-serif;
+  font-style: normal;
+  font-weight: 560;
+  letter-spacing: -0.035em;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+html[lang^="vi"]
+  :is(
+    .section-label,
+    .hero-meta,
+    .hero-copy > p,
+    .statement-copy,
+    .section-heading > p,
+    .service-row p,
+    .service-row li,
+    .project-info p,
+    .studio-facts span,
+    .lab-copy > p,
+    .footer-meta,
+    .welcome-prelude
+  ) {
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  letter-spacing: 0.025em;
+}
+
+html[lang^="vi"] .type-bridge {
+  min-height: clamp(520px, 68svh, 760px);
+  padding: clamp(76px, 11vh, 126px) var(--pad);
+  display: grid;
+  grid-template-rows: repeat(3, auto);
+  align-content: center;
+  justify-items: center;
+  gap: clamp(28px, 4.5vh, 48px);
+  overflow: hidden;
+}
+
+html[lang^="vi"] .type-bridge span,
+html[lang^="vi"] .type-bridge span:last-child {
+  position: static;
+  width: auto;
+  max-width: min(100%, 18ch);
+  margin: 0;
+  align-self: center;
+  color: #f5f5f7;
+  font-size: clamp(48px, 6.8vw, 108px);
+  line-height: 1.04;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  transform: none !important;
+  will-change: auto;
+}
+
+html[lang^="vi"] .type-bridge i {
+  position: static;
+  margin: 0;
+  align-self: center;
+  color: rgba(220, 220, 228, 0.62);
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: clamp(13px, 1.35vw, 20px);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: none !important;
+  will-change: auto;
+}
+
+html[lang^="vi"] .statement h2,
+html[lang^="vi"] .section-heading h2,
+html[lang^="vi"] .lab-copy h2,
+html[lang^="vi"] .footer-top h2 {
+  line-height: 1.16;
+}
+
+html[lang^="vi"] .about-copy {
+  line-height: 1.28;
+}
+
+@media (max-width: 760px) {
+  html[lang^="vi"] .type-bridge {
+    min-height: 390px;
+    padding-block: 62px;
+    gap: 24px;
+  }
+
+  html[lang^="vi"] .type-bridge span,
+  html[lang^="vi"] .type-bridge span:last-child {
+    max-width: 13ch;
+    font-size: clamp(34px, 10vw, 46px);
+    line-height: 1.08;
+  }
+
+  html[lang^="vi"] .type-bridge i {
+    font-size: 11px;
+  }
+}
+
+/* Vietnamese reference typography: light grotesk display + mono utility copy. */
+html[lang^="vi"] {
+  --vi-display: "Manrope", "Segoe UI", Arial, sans-serif;
+  --vi-editorial: "Cormorant Garamond", Georgia, serif;
+  --vi-mono: "DM Mono", "Roboto Mono", monospace;
+}
+
+html[lang^="vi"]
+  :is(
+    .hero-title,
+    .welcome-heading h1,
+    .statement h2,
+    .section-heading h2,
+    .service-title h3,
+    .project-info h3,
+    .type-bridge span,
+    .about-copy,
+    .lab-copy h2,
+    .footer-top h2,
+    .mobile-menu nav a
+  ) {
+  font-family: var(--vi-display);
+  font-style: normal;
+  font-weight: 300;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+  font-synthesis: none;
+}
+
+html[lang^="vi"]
+  :is(
+    .statement h2 > span,
+    .section-heading h2 > span,
+    .lab-copy h2 > span,
+    .footer-top h2 > span
+  ) {
+  color: #f5f5f7;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .statement h2 .accent {
+  color: var(--violet);
+  font-family: var(--vi-display);
+  font-style: normal;
+  font-weight: 300;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[lang^="vi"] .hero-title,
+html[lang^="vi"] .hero-word-sense,
+html[lang^="vi"] .hero-word-scene,
+html[lang^="vi"] .welcome-heading h1,
+html[lang^="vi"] .welcome-heading h1 span {
+  font-family: var(--vi-display);
+  font-style: normal;
+  font-weight: 300;
+}
+
+html[lang^="vi"] .footer-wordmark {
+  font-family: var(--vi-display);
+  font-style: normal;
+  font-weight: 500;
+}
+
+html[lang^="vi"] .type-bridge span,
+html[lang^="vi"] .type-bridge span:last-child {
+  max-width: min(100%, 18ch);
+  font-family: var(--vi-display);
+  font-size: clamp(58px, 7vw, 120px);
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.065em;
+}
+
+html[lang^="vi"] .type-bridge i {
+  color: var(--ice);
+  font-family: var(--vi-editorial);
+  font-size: clamp(34px, 3.3vw, 62px);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+}
+
+html[lang^="vi"]
+  :is(
+    .section-label,
+    .hero-meta,
+    .hero-copy > p,
+    .hero-bottom,
+    .statement-copy,
+    .section-heading > p,
+    .service-no,
+    .service-row p,
+    .service-row li,
+    .project-num,
+    .project-info p,
+    .project-row time,
+    .studio-facts span,
+    .lab-copy > p,
+    .lab-visual > span,
+    .footer-top > p,
+    .footer-meta,
+    .welcome-prelude
+  ) {
+  font-family: var(--vi-mono);
+  font-style: normal;
+  font-weight: 400;
+}
+
+html[lang^="vi"] .statement h2 { font-weight: 300; letter-spacing: -0.055em; }
+html[lang^="vi"] .section-heading h2 { font-weight: 300; letter-spacing: -0.06em; }
+html[lang^="vi"] .service-title h3 { font-weight: 300; letter-spacing: -0.055em; }
+html[lang^="vi"] .project-info h3 { font-weight: 300; letter-spacing: -0.06em; }
+html[lang^="vi"] .about-copy { font-weight: 300; letter-spacing: -0.065em; }
+html[lang^="vi"] .lab-copy h2 { font-weight: 300; letter-spacing: -0.055em; }
+html[lang^="vi"] .footer-top h2 { font-weight: 300; letter-spacing: -0.075em; }
+
+@media (max-width: 760px) {
+  html[lang^="vi"] .type-bridge span,
+  html[lang^="vi"] .type-bridge span:last-child {
+    max-width: 13ch;
+    font-size: clamp(38px, 11vw, 50px);
+    line-height: 1.04;
+  }
+
+  html[lang^="vi"] .type-bridge i {
+    font-size: clamp(24px, 7vw, 34px);
+  }
+}
+
+/* Hero brand lockup: SCENE starts under the final E; ampersand follows SENSE. */
+.hero-brand-lockup {
+  --hero-brand-size: clamp(68px, 7.9vw, 150px);
+  width: max-content;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  align-items: center;
+}
+
+.hero-brand-lockup .hero-title {
+  position: relative;
+  width: max-content;
+  max-width: none;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  grid-template-rows: auto;
+  align-items: start;
+  font-size: var(--hero-brand-size);
+  line-height: 0.86;
+}
+
+/* Override the legacy last-child offset used by the previous two-line title. */
+.hero-brand-lockup .hero-title > .hero-anchor-stack,
+.hero-brand-lockup .hero-title > .hero-anchor-stack:last-child {
+  width: max-content !important;
+  max-width: none !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+.hero-brand-lockup .hero-title .hero-anchor-stack > .hero-word-scene,
+.hero-brand-lockup .hero-title .hero-anchor-stack > .hero-word-scene:last-child {
+  width: max-content !important;
+  max-width: none !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+.hero-brand-lockup .hero-word-sense-prefix {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  display: block;
+  margin: 0 !important;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+  white-space: nowrap;
+}
+
+.hero-brand-lockup .hero-anchor-stack {
+  grid-column: 2;
+  grid-row: 1;
+  width: max-content !important;
+  margin: 0 !important;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: start;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+  white-space: nowrap;
+}
+
+.hero-brand-lockup .hero-sense-end {
+  grid-row: 1;
+  width: max-content !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+}
+
+.hero-brand-lockup .hero-word-sense-anchor,
+.hero-brand-lockup .hero-word-sense-suffix {
+  display: block;
+  width: max-content !important;
+  margin: 0 !important;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+}
+
+.hero-brand-lockup .hero-word-scene {
+  grid-column: 1;
+  grid-row: 2;
+  width: max-content !important;
+  margin: 0 !important;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+}
+
+.hero-brand-lockup .hero-ampersand {
+  position: static;
+  flex: 0 0 auto;
+  z-index: 2;
+  margin-left: 0.1em;
+  color: #cbd7ff;
+  font-family: "Bodoni Moda", Georgia, serif;
+  font-size: 0.48em;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 3px 16px rgba(142, 119, 237, 0.16);
+  transform: translateY(0.02em);
+}
+
+.hero-brand-lockup .hero-studio,
+html[lang^="vi"] .hero-brand-lockup .hero-studio {
+  grid-column: 2;
+  align-self: center;
+  height: calc(var(--hero-brand-size) * 1.72);
+  margin-left: clamp(26px, 2.4vw, 46px);
+  display: flex;
+  align-items: center;
+  color: rgba(221, 221, 229, 0.68);
+  font-family: "DM Mono", "Roboto Mono", monospace;
+  font-size: var(--hero-brand-size);
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hero-brand-lockup .hero-studio > span {
+  display: block;
+  font: inherit;
+  transform: scaleY(1.72);
+  transform-origin: center;
+}
+
+/* Match the supplied light grotesk reference without changing the lockup layout. */
+.hero-brand-lockup .hero-title,
+.hero-brand-lockup .hero-title .hero-word-sense-prefix,
+.hero-brand-lockup .hero-title .hero-word-sense-anchor,
+.hero-brand-lockup .hero-title .hero-word-sense-suffix,
+.hero-brand-lockup .hero-title .hero-word-scene,
+.hero-brand-lockup .hero-studio,
+html[lang^="vi"] .hero-brand-lockup .hero-title,
+html[lang^="vi"] .hero-brand-lockup .hero-studio {
+  font-family: "Manrope", "Segoe UI", Arial, sans-serif !important;
+  font-style: normal !important;
+  font-weight: 300 !important;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
+  font-synthesis: none;
+}
+
+@media (max-width: 760px) {
+  .hero-brand-lockup {
+    --hero-brand-size: clamp(25px, 7.4vw, 38px);
+  }
+
+  .hero-brand-lockup .hero-title > .hero-anchor-stack,
+  .hero-brand-lockup .hero-title > .hero-anchor-stack:last-child,
+  .hero-brand-lockup .hero-title .hero-anchor-stack > .hero-word-scene,
+  .hero-brand-lockup .hero-title .hero-anchor-stack > .hero-word-scene:last-child {
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  .hero-brand-lockup .hero-ampersand {
+    margin-left: 0.06em;
+    font-size: 0.46em;
+  }
+
+  .hero-brand-lockup .hero-studio,
+  html[lang^="vi"] .hero-brand-lockup .hero-studio {
+    margin-left: clamp(10px, 3vw, 20px);
+    letter-spacing: -0.12em;
+  }
+}
+
+/* Keep the replacement hero footage clean; geometry/orbit layers remain separate. */
+.hero-media {
+  clip-path: none !important;
+  transform: none !important;
+  transform-style: flat;
+  filter: none !important;
+  will-change: auto;
+}
+
+.hero-media::before {
+  content: none;
+}
+
+.hero-video {
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  object-fit: cover;
+  object-position: center;
+  filter: none;
 }

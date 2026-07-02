@@ -797,11 +797,10 @@ function Header({
 }
 
 const textSelectors = [
-  ".hero-title span", ".hero-meta span", ".hero-copy p", ".hero-bottom p", ".hero-scroll-cta", ".live-clock span", ".live-clock strong", ".live-clock i", ".live-clock small",
+  ".hero-word-sense-prefix", ".hero-anchor-stack", ".hero-studio", ".hero-meta span", ".hero-copy p", ".hero-bottom p", ".hero-scroll-cta", ".live-clock span", ".live-clock strong", ".live-clock i", ".live-clock small",
   ".statement h2 span", ".statement-copy",
   ".services h2 span", ".services .section-heading p", ".service-row h3", ".service-row p", ".service-row li", ".services .text-link",
   ".projects h2 span", ".projects .section-heading p", ".project-info h3", ".project-info p",
-  ".type-bridge span", ".type-bridge i",
   ".about-copy .word-inner", ".studio-facts div span", ".studio-facts div strong", ".lab-copy h2 span", ".lab-copy p", ".lab-copy a",
   ".footer-top p", ".footer-top h2 span", ".footer-top a", ".footer-meta div span", ".footer-meta div a", ".footer-meta div p", ".footer-wordmark span"
 ].join(", ");
@@ -919,6 +918,10 @@ export default function Home() {
         languageTransitioningRef.current = false;
         gsap.set(loader, { autoAlpha: 0, clipPath: "inset(0% 0% 0% 100%)" });
         gsap.set(targets, { clearProps: "transform,opacity,filter,willChange" });
+        gsap.set(".type-bridge span, .type-bridge i", { clearProps: "transform" });
+        void document.fonts.ready.then(() => {
+          window.requestAnimationFrame(() => ScrollTrigger.refresh());
+        });
       },
     })
       .fromTo(
@@ -965,7 +968,7 @@ export default function Home() {
       { yPercent: -100, opacity: 0 },
       { yPercent: 0, opacity: 1, duration: 0.9, ease: "power3.out" }
     );
-    tl.fromTo(".hero-title span",
+    tl.fromTo(".hero-word-sense-prefix, .hero-anchor-stack, .hero-studio",
       { yPercent: 110, rotate: 1.5, opacity: 0 },
       { yPercent: 0, rotate: 0, opacity: 1, stagger: 0.12, duration: 1.1, ease: "power4.out" },
       "-=0.6"
@@ -1000,37 +1003,21 @@ export default function Home() {
       });
 
       if (!reduceMotion) {
-        // Morphing clipPath & parallax scale on scroll (card morph)
-        gsap.fromTo(".hero-media",
-          { clipPath: "inset(12% 16% 12% 16% round 40px)", scale: 1 },
-          {
-            clipPath: "inset(0% 0% 0% 0% round 0px)",
-            scale: 0.96,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".hero",
-              start: "top top",
-              end: "bottom top",
-              scrub: true,
-            },
-          }
-        );
-
-        // Hero title shrink scroll
-        gsap.to(".hero-title", {
+        // Move the complete brand lockup so STUDIO stays attached on scroll.
+        gsap.to(".hero-brand-lockup", {
           y: () => {
             const logo = document.querySelector(".header-brand");
-            const title = document.querySelector(".hero-title");
-            if (logo && title) {
-              return logo.getBoundingClientRect().top - title.getBoundingClientRect().top;
+            const lockup = document.querySelector(".hero-brand-lockup");
+            if (logo && lockup) {
+              return logo.getBoundingClientRect().top - lockup.getBoundingClientRect().top;
             }
             return -200;
           },
           x: () => {
             const logo = document.querySelector(".header-brand");
-            const title = document.querySelector(".hero-title");
-            if (logo && title) {
-              return logo.getBoundingClientRect().left - title.getBoundingClientRect().left;
+            const lockup = document.querySelector(".hero-brand-lockup");
+            if (logo && lockup) {
+              return logo.getBoundingClientRect().left - lockup.getBoundingClientRect().left;
             }
             return 0;
           },
@@ -1268,36 +1255,40 @@ export default function Home() {
           }
         );
 
-        // Type bridge parallax
-        gsap.fromTo(
-          ".type-bridge span:first-child",
-          { xPercent: -5 },
-          {
-            xPercent: 0,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".type-bridge",
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 2,
-            },
-          }
-        );
+        // Vietnamese uses stable native metrics; keep this bridge typographic and static.
+        if (locale === "vi") {
+          gsap.set(".type-bridge span, .type-bridge i", { clearProps: "transform" });
+        } else {
+          gsap.fromTo(
+            ".type-bridge span:first-child",
+            { xPercent: -5 },
+            {
+              xPercent: 0,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".type-bridge",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 2,
+              },
+            }
+          );
 
-        gsap.fromTo(
-          ".type-bridge span:last-child",
-          { xPercent: 5 },
-          {
-            xPercent: 0,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".type-bridge",
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 2,
-            },
-          }
-        );
+          gsap.fromTo(
+            ".type-bridge span:last-child",
+            { xPercent: 5 },
+            {
+              xPercent: 0,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".type-bridge",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 2,
+              },
+            }
+          );
+        }
 
         gsap.fromTo(
           ".section-heading h2 span, .lab-copy h2 span, .footer-top h2 span",
@@ -1519,13 +1510,11 @@ export default function Home() {
                 loop
                 muted
                 playsInline
-                poster="/hero-light-visual.png?v=2"
+                preload="auto"
                 aria-hidden="true"
               >
-                <source src="/hero-loop-light.mp4?v=2" type="video/mp4" />
+                <source src="/hero-sphere-orbit.mp4?v=clean-1" type="video/mp4" />
               </video>
-              <div className="hero-vignette" />
-              <div className="hero-scanlines" />
             </div>
 
             <div className="hero-frame" aria-hidden="true"><i /><i /><i /><i /></div>
@@ -1552,10 +1541,20 @@ export default function Home() {
 
             <div className="hero-copy">
               <p className="hero-disciplines">{t.hero.disciplines}</p>
-              <h1 className="hero-title" id="hero-title">
-                <span>Sense <em>&amp;</em></span>
-                <span>Scene Studio</span>
-              </h1>
+              <div className="hero-brand-lockup">
+                <h1 className="hero-title" id="hero-title">
+                  <span className="hero-word-sense-prefix">S</span>
+                  <span className="hero-anchor-stack">
+                    <span className="hero-sense-end">
+                      <span className="hero-word-sense-anchor">E</span>
+                      <span className="hero-word-sense-suffix">NSE</span>
+                      <em className="hero-ampersand">&amp;</em>
+                    </span>
+                    <span className="hero-word-scene">SCENE</span>
+                  </span>
+                </h1>
+                <strong className="hero-studio"><span>STUDIO</span></strong>
+              </div>
             </div>
 
             <div className="hero-bottom">
