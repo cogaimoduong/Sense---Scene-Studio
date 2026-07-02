@@ -5572,3 +5572,412 @@ body.welcome-open {
     display: none;
   }
 }
+
+/* Editorial refinement: open composition instead of nested modal cards. */
+.welcome-gate {
+  padding: clamp(28px, 5vw, 76px);
+  background:
+    radial-gradient(ellipse at 68% 32%, rgba(91, 72, 176, 0.15), transparent 38%),
+    radial-gradient(ellipse at 18% 82%, rgba(68, 168, 184, 0.07), transparent 34%),
+    #030306;
+}
+
+.welcome-gate::before {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 82% 68%, rgba(97, 241, 255, 0.12) 0 1px, transparent 1.5px);
+  background-size: 170px 190px, 230px 210px;
+  mask-image: linear-gradient(135deg, transparent 8%, #000 42%, transparent 88%);
+  opacity: 0.32;
+}
+
+.welcome-gate::after {
+  opacity: 0.32;
+  animation-duration: 9s;
+}
+
+.welcome-panel {
+  width: min(1120px, 100%);
+  min-height: min(680px, calc(100svh - (clamp(28px, 5vw, 76px) * 2)));
+  padding: clamp(36px, 4.5vw, 64px) 0;
+  align-items: stretch;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  text-align: left;
+}
+
+.welcome-panel::before {
+  inset: auto 0 0;
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.24), rgba(97, 241, 255, 0.08) 42%, transparent 82%);
+}
+
+.welcome-panel::after {
+  width: 10%;
+  opacity: 0.34;
+  animation-duration: 7.5s;
+}
+
+.welcome-prelude {
+  top: 0;
+  left: 0;
+  letter-spacing: 0.16em;
+}
+
+.welcome-heading {
+  width: 100%;
+  align-items: stretch;
+}
+
+.welcome-heading > p {
+  margin: 0 0 clamp(28px, 4vw, 48px) clamp(10px, 5vw, 72px);
+  text-align: left;
+}
+
+.welcome-heading h1 {
+  width: 100%;
+  justify-content: flex-start;
+  gap: clamp(10px, 1.8vw, 26px);
+  font-size: clamp(64px, 8vw, 122px);
+  letter-spacing: -0.072em;
+}
+
+.welcome-heading > strong {
+  align-self: flex-end;
+  margin: clamp(26px, 3vw, 40px) clamp(14px, 7vw, 96px) 0 0;
+}
+
+.welcome-copy {
+  max-width: 600px;
+  margin: clamp(54px, 7vh, 82px) 0 0 clamp(180px, 34%, 390px);
+  color: rgba(225, 225, 232, 0.62);
+  text-align: left;
+}
+
+.welcome-actions {
+  justify-content: flex-start;
+  margin: clamp(30px, 4vh, 46px) 0 0 clamp(180px, 34%, 390px);
+}
+
+.welcome-actions button {
+  min-height: 50px;
+  padding-inline: 20px;
+  background: transparent;
+  transition-duration: 0.38s;
+}
+
+.welcome-actions button:first-child {
+  color: #f5f5f8;
+  border-color: rgba(97, 241, 255, 0.55);
+  background: rgba(97, 241, 255, 0.06);
+}
+
+.welcome-actions button:hover,
+.welcome-actions button:focus-visible,
+.welcome-actions button:first-child:hover,
+.welcome-actions button:first-child:focus-visible {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+}
+
+.welcome-panel > small {
+  right: 0;
+  bottom: 16px;
+  left: auto;
+}
+
+.welcome-particles {
+  width: min(1120px, calc(100% - (clamp(28px, 5vw, 76px) * 2)));
+  height: min(680px, calc(100svh - (clamp(28px, 5vw, 76px) * 2)));
+}
+
+.settings-overlay {
+  background: rgba(2, 2, 5, 0.76);
+  backdrop-filter: blur(26px) saturate(0.82);
+  transition-duration: 0.42s;
+}
+
+.settings-dialog {
+  width: min(680px, 100%);
+  background:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.025), transparent 46%),
+    rgba(7, 7, 11, 0.96);
+  border: 0;
+  border-block: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 42px 120px rgba(0, 0, 0, 0.54);
+  transition-duration: 0.52s;
+}
+
+.settings-dialog-head {
+  position: relative;
+  min-height: 92px;
+  padding: 20px 28px;
+  border: 0;
+}
+
+.settings-dialog-head::after {
+  content: "";
+  position: absolute;
+  right: 28px;
+  bottom: 0;
+  left: 28px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), transparent);
+}
+
+.settings-back,
+.settings-close {
+  border: 0;
+  color: rgba(245, 245, 248, 0.62) !important;
+}
+
+.settings-back:hover,
+.settings-back:focus-visible,
+.settings-close:hover,
+.settings-close:focus-visible {
+  color: var(--ice) !important;
+  background: transparent;
+}
+
+.settings-dialog-body {
+  padding: 14px 28px 30px;
+}
+
+.settings-home {
+  display: block;
+}
+
+.settings-home > button {
+  width: 100%;
+  min-height: 108px;
+  padding: 20px 4px;
+  grid-template-columns: 54px minmax(0, 1fr) auto 22px;
+  grid-template-rows: 1fr;
+  align-items: center;
+  color: rgba(245, 245, 248, 0.72);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: color 0.35s ease, padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.35s ease;
+}
+
+.settings-home > button:hover,
+.settings-home > button:focus-visible {
+  padding-left: 12px;
+  color: #fff;
+  background: transparent;
+  border-color: rgba(97, 241, 255, 0.36);
+  transform: none;
+}
+
+.settings-card-icon {
+  width: 38px;
+  height: 38px;
+  grid-row: auto;
+  color: rgba(97, 241, 255, 0.72);
+  background: transparent;
+  border: 0;
+}
+
+.settings-home > button > span:nth-child(2) {
+  gap: 7px;
+}
+
+.settings-home strong {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.settings-home small {
+  max-width: 390px;
+}
+
+.settings-home i {
+  justify-self: end;
+}
+
+.settings-home > button > svg {
+  grid-column: 4;
+  grid-row: 1;
+  align-self: center;
+  opacity: 0.5;
+}
+
+.settings-language {
+  display: block;
+}
+
+.settings-language button {
+  width: 100%;
+  min-height: 66px;
+  padding: 0 6px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.settings-language button:hover,
+.settings-language button:focus-visible,
+.settings-language button.is-current {
+  color: #fff;
+  background: transparent;
+  border-color: rgba(97, 241, 255, 0.34);
+}
+
+.settings-audio .music-player-bar {
+  min-height: 74px;
+  padding-inline: 4px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-audio .music-play-button {
+  color: var(--ice) !important;
+  background: transparent;
+  border: 1px solid rgba(97, 241, 255, 0.38);
+  box-shadow: none;
+}
+
+.settings-audio .music-mode {
+  padding: 0;
+  gap: 18px;
+  background: transparent;
+}
+
+.settings-audio .music-mode button {
+  justify-content: flex-start;
+  padding: 0 2px 10px;
+  color: rgba(215, 215, 224, 0.48);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.settings-audio .music-mode button.is-active {
+  color: #fff;
+  background: transparent;
+  border-color: var(--ice);
+  box-shadow: none;
+}
+
+.settings-audio .music-track-list {
+  gap: 0 18px;
+}
+
+.settings-audio .music-track-list button {
+  min-height: 54px;
+  padding-inline: 4px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-audio .music-track-list button:hover,
+.settings-audio .music-track-list button:focus-visible,
+.settings-audio .music-track-list button.is-current {
+  background: transparent;
+  border-color: rgba(97, 241, 255, 0.3);
+}
+
+@media (max-width: 760px) {
+  .welcome-gate {
+    padding: 18px;
+  }
+
+  .welcome-panel {
+    min-height: calc(100svh - 36px);
+    max-height: calc(100svh - 36px);
+    padding: 64px 4px 54px;
+    overflow-y: auto;
+  }
+
+  .welcome-prelude {
+    top: 8px;
+    left: 4px;
+  }
+
+  .welcome-heading {
+    align-items: center;
+  }
+
+  .welcome-heading > p {
+    margin: 0 0 28px;
+    text-align: center;
+  }
+
+  .welcome-heading h1 {
+    justify-content: center;
+    font-size: clamp(50px, 16.5vw, 72px);
+  }
+
+  .welcome-heading > strong {
+    align-self: center;
+    margin: 24px 0 0;
+  }
+
+  .welcome-copy {
+    margin: 42px 10px 0;
+    text-align: center;
+  }
+
+  .welcome-actions {
+    margin: 30px 0 0;
+  }
+
+  .welcome-panel > small {
+    right: 4px;
+    bottom: 8px;
+    left: 4px;
+    text-align: center;
+  }
+
+  .welcome-particles {
+    width: calc(100% - 36px);
+    height: calc(100svh - 36px);
+  }
+
+  .settings-overlay {
+    padding: 0;
+  }
+
+  .settings-dialog {
+    max-height: 100svh;
+    border-block-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .settings-dialog-head {
+    min-height: 78px;
+    padding: 12px 18px;
+  }
+
+  .settings-dialog-head::after {
+    right: 18px;
+    left: 18px;
+  }
+
+  .settings-dialog-body {
+    max-height: calc(100svh - 78px);
+    padding: 8px 18px 24px;
+  }
+
+  .settings-home > button {
+    min-height: 104px;
+    padding-inline: 0;
+    grid-template-columns: 46px minmax(0, 1fr) auto 18px;
+  }
+
+  .settings-home > button:hover,
+  .settings-home > button:focus-visible {
+    padding-left: 6px;
+  }
+
+  .settings-audio .music-track-list {
+    display: block;
+  }
+}
