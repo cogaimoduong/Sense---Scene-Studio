@@ -1404,6 +1404,11 @@ export default function Home() {
                 preload="auto"
                 aria-hidden="true"
               >
+                <source
+                  src="/hero-sphere-orbit-4k.mp4?v=enhanced-1"
+                  type="video/mp4"
+                  media="(min-width: 761px)"
+                />
                 <source src="/hero-sphere-orbit.mp4?v=clean-1" type="video/mp4" />
               </video>
             </div>
