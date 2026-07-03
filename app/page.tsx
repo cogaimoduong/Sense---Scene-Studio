@@ -14,7 +14,7 @@ import {
   SkipForward,
   X,
 } from "lucide-react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
@@ -109,7 +109,7 @@ const cursorCopy: Record<Locale, { view: string; explore: string; hello: string;
 
 const localeDateTime: Record<Locale, { tag: string; label: string; city: string }> = {
   en: { tag: "en-US", label: "Live local time", city: "Saigon" },
-  vi: { tag: "vi-VN", label: "Giờ thời gian thực", city: "Sài Gòn" },
+  vi: { tag: "vi-VN", label: "Không gian ảo - Thời gian thực", city: "Sài Gòn" },
   zh: { tag: "zh-CN", label: "实时本地时间", city: "西贡" },
   ja: { tag: "ja-JP", label: "現在時刻", city: "サイゴン" },
   ko: { tag: "ko-KR", label: "실시간 현지 시간", city: "사이공" },
@@ -152,6 +152,110 @@ function LiveClock({ locale }: { locale: Locale }) {
       <strong>{time}</strong>
       <i>{copy.city} / GMT+07</i>
       <small>{date}</small>
+    </div>
+  );
+}
+
+function PageLoader() {
+  const [started, setStarted] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.body.classList.add("page-loading");
+
+    const frame = window.requestAnimationFrame(() => setStarted(true));
+    const leaveTimer = window.setTimeout(() => setLeaving(true), reduceMotion ? 420 : 2700);
+    const doneTimer = window.setTimeout(() => {
+      setVisible(false);
+      document.body.classList.remove("page-loading");
+    }, reduceMotion ? 700 : 3500);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(doneTimer);
+      document.body.classList.remove("page-loading");
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      className={`page-loader ${started ? "is-forming" : ""} ${leaving ? "is-leaving" : ""}`}
+      role="status"
+      aria-label="Loading Sense and Scene Studio"
+    >
+      <div className="page-loader-grid" aria-hidden="true" />
+      <div className="page-loader-stars" aria-hidden="true">
+        {Array.from({ length: 104 }, (_, index) => {
+          const angle = (index / 104) * Math.PI * 2;
+          const x = 50 + 38 * Math.cos(angle);
+          const y = 50 + 18 * Math.sin(angle * 2);
+          const seedX = Math.sin((index + 1) * 12.9898) * 43758.5453;
+          const seedY = Math.sin((index + 11) * 78.233) * 43758.5453;
+          const dx = ((seedX - Math.floor(seedX)) - 0.5) * 150;
+          const dy = ((seedY - Math.floor(seedY)) - 0.5) * 120;
+          const style = {
+            "--loader-x": `${x.toFixed(4)}%`,
+            "--loader-y": `${y.toFixed(4)}%`,
+            "--loader-dx": `${dx.toFixed(3)}vw`,
+            "--loader-dy": `${dy.toFixed(3)}vh`,
+            "--loader-delay": `${(index % 17) * 32}ms`,
+            "--loader-size": ["1px", "1.65px", "2.3px", "2.95px"][index % 4],
+          } as CSSProperties;
+
+          return <i className="page-loader-star" style={style} key={index} />;
+        })}
+      </div>
+
+      <div className="page-loader-infinity" aria-hidden="true">
+        <span className="page-loader-loop-glow is-left" />
+        <span className="page-loader-loop-glow is-right" />
+        <span className="page-loader-prism" />
+        <span className="page-loader-flare" />
+        <div className="page-loader-sparks">
+          {Array.from({ length: 12 }, (_, index) => (
+            <i
+              className="page-loader-spark"
+              key={index}
+              style={{
+                "--spark-angle": `${index * 30}deg`,
+                "--spark-distance": `${76 + (index % 4) * 22}px`,
+                "--spark-delay": `${index * 18}ms`,
+              } as CSSProperties}
+            />
+          ))}
+        </div>
+        <svg viewBox="0 0 200 100" focusable="false">
+          <defs>
+            <linearGradient id="loader-infinity-gradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#61f1ff" />
+              <stop offset="0.48" stopColor="#f5f5ff" />
+              <stop offset="1" stopColor="#8f79ff" />
+            </linearGradient>
+          </defs>
+          <path
+            className="page-loader-orbit-glow"
+            d="M100 50 C82 24 62 18 44 22 C18 28 18 72 44 78 C62 82 82 76 100 50 C118 24 138 18 156 22 C182 28 182 72 156 78 C138 82 118 76 100 50"
+          />
+          <path
+            className="page-loader-orbit"
+            d="M100 50 C82 24 62 18 44 22 C18 28 18 72 44 78 C62 82 82 76 100 50 C118 24 138 18 156 22 C182 28 182 72 156 78 C138 82 118 76 100 50"
+          />
+          <path
+            className="page-loader-orbit-pulse"
+            d="M100 50 C82 24 62 18 44 22 C18 28 18 72 44 78 C62 82 82 76 100 50 C118 24 138 18 156 22 C182 28 182 72 156 78 C138 82 118 76 100 50"
+          />
+        </svg>
+      </div>
+
+      <div className="page-loader-brand" aria-hidden="true">
+        <small>VISUAL TECHNOLOGY STUDIO</small>
+        <div><span>SENSE</span><i>&amp;</i><span>SCENE</span></div>
+      </div>
     </div>
   );
 }
@@ -1256,6 +1360,7 @@ export default function Home() {
 
   return (
     <main ref={pageRef} id="top">
+      <PageLoader />
       {/* ─── AMBIENT GRID & GLOW ─── */}
       <div className="ambient-grid" aria-hidden="true">
         <div className="noise-field" />
