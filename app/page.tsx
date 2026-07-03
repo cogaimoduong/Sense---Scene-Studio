@@ -2,25 +2,19 @@
 
 import Image from "next/image";
 import {
-  ArrowLeft,
   ArrowDown,
   ArrowUpRight,
   Check,
-  ChevronDown,
-  Languages,
   ListMusic,
   Menu,
-  Music2,
   Pause,
   Play,
   Repeat1,
   Settings,
   SkipForward,
-  Volume2,
-  VolumeX,
   X,
 } from "lucide-react";
-import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
@@ -65,69 +59,15 @@ const audioPlayerCopy: Record<Locale, {
 
 const settingsCopy: Record<Locale, {
   settings: string;
-  description: string;
   language: string;
   languageDescription: string;
-  sound: string;
-  soundDescription: string;
-  back: string;
   close: string;
 }> = {
-  en: { settings: "Settings", description: "Language and soundtrack", language: "Language", languageDescription: "Choose the interface language", sound: "Sound", soundDescription: "Playback, tracks and repeat mode", back: "Back", close: "Close settings" },
-  vi: { settings: "Cài đặt", description: "Ngôn ngữ và âm thanh", language: "Ngôn ngữ", languageDescription: "Chọn ngôn ngữ giao diện", sound: "Âm thanh", soundDescription: "Phát nhạc, chọn bài và chế độ lặp", back: "Quay lại", close: "Đóng cài đặt" },
-  zh: { settings: "设置", description: "语言与背景音乐", language: "语言", languageDescription: "选择界面语言", sound: "声音", soundDescription: "播放、选曲与循环模式", back: "返回", close: "关闭设置" },
-  ja: { settings: "設定", description: "言語とサウンド", language: "言語", languageDescription: "表示言語を選択", sound: "サウンド", soundDescription: "再生、選曲、リピート設定", back: "戻る", close: "設定を閉じる" },
-  ko: { settings: "설정", description: "언어 및 사운드", language: "언어", languageDescription: "인터페이스 언어 선택", sound: "사운드", soundDescription: "재생, 트랙 및 반복 설정", back: "뒤로", close: "설정 닫기" },
-};
-
-const welcomeCopy: Record<Locale, {
-  prelude: string;
-  welcome: string;
-  body: string;
-  withSound: string;
-  withoutSound: string;
-  note: string;
-}> = {
-  en: {
-    prelude: "A visual technology studio from Saigon",
-    welcome: "Welcome to",
-    body: "Every scene is composed to be felt as much as seen. Would you like to enter with the full soundtrack?",
-    withSound: "Enter with sound",
-    withoutSound: "Continue silently",
-    note: "You can change this anytime in Settings",
-  },
-  vi: {
-    prelude: "Studio công nghệ hình ảnh từ Sài Gòn",
-    welcome: "Chào mừng bạn đến với",
-    body: "Mỗi khung cảnh được tạo nên để cảm nhận trọn vẹn, không chỉ để ngắm nhìn. Bạn có muốn bước vào trải nghiệm cùng âm thanh?",
-    withSound: "Trải nghiệm cùng âm thanh",
-    withoutSound: "Tiếp tục không âm thanh",
-    note: "Bạn có thể thay đổi bất cứ lúc nào trong Cài đặt",
-  },
-  zh: {
-    prelude: "来自西贡的视觉科技工作室",
-    welcome: "欢迎来到",
-    body: "每一个场景不仅为观看而创作，更为感受而生。是否开启完整声音体验？",
-    withSound: "开启声音体验",
-    withoutSound: "静音继续",
-    note: "您可以随时在设置中更改",
-  },
-  ja: {
-    prelude: "サイゴン発のビジュアルテクノロジースタジオ",
-    welcome: "ようこそ",
-    body: "すべてのシーンは、見るだけでなく感じるために構成されています。サウンドとともに体験しますか？",
-    withSound: "サウンドと体験する",
-    withoutSound: "無音で続ける",
-    note: "設定からいつでも変更できます",
-  },
-  ko: {
-    prelude: "사이공의 비주얼 테크놀로지 스튜디오",
-    welcome: "환영합니다",
-    body: "모든 장면은 보는 것을 넘어 온전히 느낄 수 있도록 설계됩니다. 사운드와 함께 경험하시겠습니까?",
-    withSound: "사운드와 함께 시작",
-    withoutSound: "음소거로 계속",
-    note: "설정에서 언제든 변경할 수 있습니다",
-  },
+  en: { settings: "Settings", language: "Language", languageDescription: "Choose the interface language", close: "Close settings" },
+  vi: { settings: "Cài đặt", language: "Ngôn ngữ", languageDescription: "Chọn ngôn ngữ giao diện", close: "Đóng cài đặt" },
+  zh: { settings: "设置", language: "语言", languageDescription: "选择界面语言", close: "关闭设置" },
+  ja: { settings: "設定", language: "言語", languageDescription: "表示言語を選択", close: "設定を閉じる" },
+  ko: { settings: "설정", language: "언어", languageDescription: "인터페이스 언어 선택", close: "설정 닫기" },
 };
 
 const projects = [
@@ -216,90 +156,14 @@ function LiveClock({ locale }: { locale: Locale }) {
   );
 }
 
-function WelcomeGate({ locale }: { locale: Locale }) {
-  const [visible, setVisible] = useState(true);
-  const [dissolving, setDissolving] = useState(false);
-  const closeTimerRef = useRef<number | null>(null);
-  const copy = welcomeCopy[locale];
-
-  useEffect(() => {
-    document.body.classList.toggle("welcome-open", visible);
-    return () => {
-      document.body.classList.remove("welcome-open");
-      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    };
-  }, [visible]);
-
-  const enterSite = (soundEnabled: boolean) => {
-    if (dissolving) return;
-
-    window.dispatchEvent(new CustomEvent("sense-scene-audio-choice", {
-      detail: { enabled: soundEnabled },
-    }));
-    setDissolving(true);
-    closeTimerRef.current = window.setTimeout(() => setVisible(false), 1280);
-  };
-
-  if (!visible) return null;
-
-  return (
-    <div className={`welcome-gate ${dissolving ? "is-dissolving" : ""}`} role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <div className="welcome-cosmos" aria-hidden="true"><i /><i /><i /></div>
-
-      <section className="welcome-panel">
-        <span className="welcome-prelude">[ {copy.prelude} ]</span>
-        <div className="welcome-heading">
-          <p>{copy.welcome}</p>
-          <h1 id="welcome-title" aria-label="Sense and Scene Studio">
-            <span>SENSE</span>
-            <i>&amp;</i>
-            <span>SCENE</span>
-          </h1>
-          <strong>STUDIO</strong>
-        </div>
-
-        <p className="welcome-copy">{copy.body}</p>
-
-        <div className="welcome-actions">
-          <button type="button" onClick={() => enterSite(true)}>
-            <Volume2 size={16} aria-hidden="true" />
-            <span>{copy.withSound}</span>
-            <ArrowUpRight size={15} aria-hidden="true" />
-          </button>
-          <button type="button" onClick={() => enterSite(false)}>
-            <VolumeX size={16} aria-hidden="true" />
-            <span>{copy.withoutSound}</span>
-          </button>
-        </div>
-
-        <small>{copy.note}</small>
-      </section>
-
-      <div className="welcome-particles" aria-hidden="true">
-        {Array.from({ length: 84 }, (_, index) => {
-          const style = {
-            "--particle-x": `${(index * 37 + 11) % 100}%`,
-            "--particle-y": `${(index * 61 + 7) % 100}%`,
-            "--particle-dx": `${((index * 43) % 180) - 90}px`,
-            "--particle-dy": `${-40 - ((index * 29) % 190)}px`,
-            "--particle-delay": `${(index % 12) * 0.028}s`,
-            "--particle-size": `${1 + (index % 4)}px`,
-          } as CSSProperties;
-          return <i key={index} style={style} />;
-        })}
-      </div>
-    </div>
-  );
-}
-
 function AudioPlayer({ locale }: { locale: Locale }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const shouldPlayRef = useRef(true);
+  const playerRef = useRef<HTMLDivElement>(null);
+  const shouldPlayRef = useRef(false);
   const playAttemptRef = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [soundUnlocked, setSoundUnlocked] = useState(false);
-  const [needsGesture, setNeedsGesture] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<PlaybackMode>("playlist");
   const copy = audioPlayerCopy[locale];
   const currentTrack = audioTracks[currentIndex];
@@ -311,10 +175,8 @@ function AudioPlayer({ locale }: { locale: Locale }) {
     playAttemptRef.current = true;
     try {
       await audio.play();
-      if (!audio.muted) setNeedsGesture(false);
     } catch {
       setIsPlaying(false);
-      setNeedsGesture(true);
     } finally {
       playAttemptRef.current = false;
     }
@@ -326,87 +188,34 @@ function AudioPlayer({ locale }: { locale: Locale }) {
 
     audio.volume = 0.46;
     audio.load();
-    if (shouldPlayRef.current) void playAudio();
+    if (shouldPlayRef.current) void playAudio(true);
   }, [currentIndex, playAudio]);
 
   useEffect(() => {
-    const handleAudioChoice = (event: Event) => {
-      const audio = audioRef.current;
-      if (!audio) return;
+    if (!isOpen) return;
 
-      const enabled = (event as CustomEvent<{ enabled: boolean }>).detail.enabled;
-      if (!enabled) {
-        shouldPlayRef.current = false;
-        audio.muted = true;
-        audio.pause();
-        setSoundUnlocked(false);
-        setNeedsGesture(false);
-        return;
-      }
-
-      shouldPlayRef.current = true;
-      audio.muted = false;
-      setSoundUnlocked(true);
-      setNeedsGesture(false);
-      if (audio.paused) void playAudio(true);
-      else setIsPlaying(true);
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!playerRef.current?.contains(event.target as Node)) setIsOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
     };
 
-    window.addEventListener("sense-scene-audio-choice", handleAudioChoice);
-    return () => window.removeEventListener("sense-scene-audio-choice", handleAudioChoice);
-  }, [playAudio]);
-
-  useEffect(() => {
-    const unlockAudio = () => {
-      const audio = audioRef.current;
-      if (!audio || !shouldPlayRef.current || document.body.classList.contains("welcome-open")) return;
-
-      audio.muted = false;
-      setSoundUnlocked(true);
-      setNeedsGesture(false);
-      if (audio.paused) void playAudio(true);
-      else setIsPlaying(true);
-    };
-    const interactionEvents = [
-      "pointerdown",
-      "pointerup",
-      "mousedown",
-      "touchstart",
-      "touchend",
-      "touchmove",
-      "click",
-      "keydown",
-      "wheel",
-      "scroll",
-    ] as const;
-
-    interactionEvents.forEach((eventName) => {
-      window.addEventListener(eventName, unlockAudio, { capture: true, passive: true });
-    });
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
     return () => {
-      interactionEvents.forEach((eventName) => {
-        window.removeEventListener(eventName, unlockAudio, true);
-      });
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [playAudio]);
+  }, [isOpen]);
 
   const togglePlayback = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (!soundUnlocked) {
-      shouldPlayRef.current = true;
-      audio.muted = false;
-      setSoundUnlocked(true);
-      setNeedsGesture(false);
-      if (audio.paused) void playAudio(true);
-      else setIsPlaying(true);
-      return;
-    }
-
     if (audio.paused) {
       shouldPlayRef.current = true;
-      void playAudio();
+      void playAudio(true);
     } else {
       shouldPlayRef.current = false;
       audio.pause();
@@ -418,7 +227,7 @@ function AudioPlayer({ locale }: { locale: Locale }) {
 
     if (index === currentIndex) {
       if (audioRef.current) audioRef.current.currentTime = 0;
-      void playAudio();
+      void playAudio(true);
       return;
     }
 
@@ -435,23 +244,38 @@ function AudioPlayer({ locale }: { locale: Locale }) {
       <audio
         ref={audioRef}
         src={currentTrack.src}
-        autoPlay
-        muted={!soundUnlocked}
-        preload="auto"
+        preload="metadata"
         loop={mode === "repeat-one"}
-        onPlay={() => setIsPlaying(soundUnlocked)}
+        onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => {
           if (mode === "playlist") playNext();
         }}
       />
 
-      <div className={`music-player ${needsGesture ? "needs-gesture" : ""}`} aria-label={copy.soundtrack}>
+      <div ref={playerRef} className={`music-player ${isOpen ? "is-open" : ""}`} aria-label={copy.soundtrack}>
+      <button
+        type="button"
+        className="music-art-trigger"
+        aria-label={copy.chooseTrack}
+        aria-haspopup="dialog"
+        aria-controls="music-panel"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <Image src="/music-button.png" alt="" fill sizes="42px" aria-hidden="true" />
+        <span className={`music-trigger-equalizer ${isPlaying ? "is-playing" : ""}`} aria-hidden="true">
+          <i /><i /><i />
+        </span>
+      </button>
 
-      <div className="music-playlist">
+      <section className="music-playlist" id="music-panel" role="dialog" aria-label={copy.chooseTrack}>
         <div className="music-playlist-head">
           <span>{copy.chooseTrack}</span>
-          <span>04 TRACKS</span>
+          <span>{String(audioTracks.length).padStart(2, "0")} TRACKS</span>
+          <button type="button" aria-label="Close" onClick={() => setIsOpen(false)}>
+            <X size={14} aria-hidden="true" />
+          </button>
         </div>
 
         <div className="music-mode" aria-label="Playback mode">
@@ -488,7 +312,6 @@ function AudioPlayer({ locale }: { locale: Locale }) {
             </button>
           ))}
         </div>
-      </div>
 
       <div className="music-player-bar">
         <button
@@ -501,7 +324,7 @@ function AudioPlayer({ locale }: { locale: Locale }) {
         </button>
 
         <div className="music-now-playing" aria-live="polite">
-          <span>{needsGesture ? copy.tapToPlay : copy.soundtrack}</span>
+          <span>{copy.soundtrack}</span>
           <strong>{currentTrack.title}</strong>
         </div>
 
@@ -514,6 +337,7 @@ function AudioPlayer({ locale }: { locale: Locale }) {
         </button>
 
       </div>
+      </section>
       </div>
     </>
   );
@@ -595,9 +419,7 @@ function SettingsMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [section, setSection] = useState<"root" | "language" | "audio">("root");
   const copy = settingsCopy[locale];
-  const current = localeOptions.find((option) => option.code === locale) ?? localeOptions[0];
 
   useEffect(() => {
     setMounted(true);
@@ -612,19 +434,14 @@ function SettingsMenu({
     if (!open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      if (section === "root") setOpen(false);
-      else setSection("root");
+      if (event.key === "Escape") setOpen(false);
     };
 
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, section]);
+  }, [open]);
 
-  const closeSettings = () => {
-    setOpen(false);
-    setSection("root");
-  };
+  const closeSettings = () => setOpen(false);
 
   const dialog = (
     <div
@@ -636,17 +453,11 @@ function SettingsMenu({
     >
       <section className="settings-dialog" id="site-settings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <header className="settings-dialog-head">
-          {section !== "root" ? (
-            <button type="button" className="settings-back" aria-label={copy.back} onClick={() => setSection("root")}>
-              <ArrowLeft size={17} aria-hidden="true" />
-            </button>
-          ) : <span className="settings-head-spacer" />}
+          <span className="settings-head-spacer" />
 
           <div>
             <span>{copy.settings}</span>
-            <h2 id="settings-title">
-              {section === "language" ? copy.language : section === "audio" ? copy.sound : copy.description}
-            </h2>
+            <h2 id="settings-title">{copy.language}</h2>
           </div>
 
           <button type="button" className="settings-close" aria-label={copy.close} onClick={closeSettings}>
@@ -655,47 +466,25 @@ function SettingsMenu({
         </header>
 
         <div className="settings-dialog-body">
-          {section === "root" && (
-            <div className="settings-home">
-              <button type="button" onClick={() => setSection("language")}>
-                <span className="settings-card-icon"><Languages size={22} aria-hidden="true" /></span>
-                <span><strong>{copy.language}</strong><small>{copy.languageDescription}</small></span>
-                <i>{current.short}</i>
-                <ChevronDown size={17} aria-hidden="true" />
+          <p className="settings-language-description">{copy.languageDescription}</p>
+          <div className="settings-language" role="radiogroup" aria-label={copy.language}>
+            {localeOptions.map((option) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={locale === option.code}
+                className={locale === option.code ? "is-current" : ""}
+                key={option.code}
+                onClick={() => {
+                  onChange(option.code);
+                  closeSettings();
+                }}
+              >
+                <span className="language-code">{option.short}</span>
+                <strong>{option.label}</strong>
+                {locale === option.code && <Check size={15} aria-hidden="true" />}
               </button>
-
-              <button type="button" onClick={() => setSection("audio")}>
-                <span className="settings-card-icon"><Music2 size={22} aria-hidden="true" /></span>
-                <span><strong>{copy.sound}</strong><small>{copy.soundDescription}</small></span>
-                <ChevronDown size={17} aria-hidden="true" />
-              </button>
-            </div>
-          )}
-
-          {section === "language" && (
-            <div className="settings-language" role="radiogroup" aria-label={copy.language}>
-              {localeOptions.map((option) => (
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={locale === option.code}
-                  className={locale === option.code ? "is-current" : ""}
-                  key={option.code}
-                  onClick={() => {
-                    onChange(option.code);
-                    closeSettings();
-                  }}
-                >
-                  <span className="language-code">{option.short}</span>
-                  <strong>{option.label}</strong>
-                  {locale === option.code && <Check size={15} aria-hidden="true" />}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="settings-audio" hidden={section !== "audio"}>
-            <AudioPlayer locale={locale} />
+            ))}
           </div>
         </div>
       </section>
@@ -711,10 +500,7 @@ function SettingsMenu({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls="site-settings"
-        onClick={() => {
-          setSection("root");
-          setOpen(true);
-        }}
+        onClick={() => setOpen(true)}
         data-magnetic
       >
         <Settings size={15} aria-hidden="true" />
@@ -1495,9 +1281,9 @@ export default function Home() {
         <span>SCENE</span>
       </div>
 
-      <WelcomeGate locale={locale} />
       <CustomCursor />
       <Header locale={locale} onLocaleChange={handleLocaleChange} t={t} cursor={cursor} />
+      <AudioPlayer locale={locale} />
 
       <div className="site-content">
         {/* ─── HERO ─── */}
