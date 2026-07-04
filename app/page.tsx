@@ -924,8 +924,9 @@ export default function Home() {
           },
         });
 
-        // Orbit spin
-        gsap.to(".hero-orbit", {
+        // Restore the original central orbit and keep its scroll-linked spin.
+        gsap.set(".hero-orbit-original", { xPercent: -50, yPercent: -52 });
+        gsap.to(".hero-orbit-original", {
           rotate: 150,
           scale: 1.1,
           ease: "none",
@@ -1231,13 +1232,10 @@ export default function Home() {
       }
     }, pageRef);
 
-    // Hero media and orbit 3D tilt
-    gsap.set(".hero-orbit", { xPercent: -50, yPercent: -52 });
+    // Hero background 3D tilt
     const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
     const quickRotateX = gsap.quickTo(heroMediaRef.current, "rotationX", { duration: 0.55, ease: "power3.out" });
     const quickRotateY = gsap.quickTo(heroMediaRef.current, "rotationY", { duration: 0.55, ease: "power3.out" });
-    const quickOrbitX = gsap.quickTo(".hero-orbit", "x", { duration: 0.72, ease: "power3.out" });
-    const quickOrbitY = gsap.quickTo(".hero-orbit", "y", { duration: 0.72, ease: "power3.out" });
     const ambientGlow = document.querySelector(".ambient-light-glow");
     const quickGlowX = ambientGlow
       ? gsap.quickTo(ambientGlow, "x", { duration: 0.42, ease: "power3.out" })
@@ -1250,8 +1248,6 @@ export default function Home() {
       if (reduceMotion || isCoarsePointer) return;
       quickRotateX((event.clientY / window.innerHeight - 0.5) * -4);
       quickRotateY((event.clientX / window.innerWidth - 0.5) * 6);
-      quickOrbitX((event.clientX / window.innerWidth - 0.5) * -36);
-      quickOrbitY((event.clientY / window.innerHeight - 0.5) * -36);
       quickGlowX?.(event.clientX);
       quickGlowY?.(event.clientY);
     };
@@ -1395,26 +1391,37 @@ export default function Home() {
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-sticky">
             <div className="hero-media" ref={heroMediaRef}>
-              <video
-                className="hero-video"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
+              <Image
+                className="hero-background"
+                src="/hero-spatial-background.png"
+                alt=""
+                fill
+                priority
+                quality={92}
+                sizes="100vw"
                 aria-hidden="true"
-              >
-                <source
-                  src="/hero-sphere-orbit-4k.mp4?v=enhanced-1"
-                  type="video/mp4"
-                  media="(min-width: 761px)"
-                />
-                <source src="/hero-sphere-orbit.mp4?v=clean-1" type="video/mp4" />
-              </video>
+              />
+              <div className="hero-vignette" aria-hidden="true" />
             </div>
 
             <div className="hero-frame" aria-hidden="true"><i /><i /><i /><i /></div>
-            <div className="hero-orbit" aria-hidden="true"><span>∞</span></div>
+            <div className="hero-orbit hero-orbit-original" aria-hidden="true"><span>∞</span></div>
+            <div className="hero-logo-quarter-stage" aria-hidden="true">
+              <div className="hero-logo-quarter-motion">
+                <div className="hero-orbiting-logo">
+                  {Array.from({ length: 8 }, (_, index) => (
+                    <span className={`hero-logo-satellite is-${index + 1}`} key={index}><i /></span>
+                  ))}
+                  <Image
+                    src="/sense-scene-symbol.png"
+                    alt=""
+                    width={343}
+                    height={638}
+                    sizes="(max-width: 760px) 104px, 168px"
+                  />
+                </div>
+              </div>
+            </div>
             <div className="hero-particles" aria-hidden="true">
               {Array.from({ length: 18 }, (_, index) => <span key={index} />)}
             </div>
