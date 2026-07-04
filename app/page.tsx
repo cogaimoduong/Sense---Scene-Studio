@@ -925,7 +925,7 @@ export default function Home() {
         });
 
         // Restore the original central orbit and keep its scroll-linked spin.
-        gsap.set(".hero-orbit-original", { xPercent: -50, yPercent: -52 });
+        gsap.set(".hero-orbit-original", { xPercent: 0, yPercent: 0 });
         gsap.to(".hero-orbit-original", {
           rotate: 150,
           scale: 1.1,
@@ -956,7 +956,7 @@ export default function Home() {
           ease: "sine.inOut",
         });
 
-        gsap.to(".hero-frame i", {
+        gsap.to(".hero-frame > i", {
           scale: 1.9,
           opacity: 0.45,
           duration: 1.9,
@@ -1404,23 +1404,28 @@ export default function Home() {
               <div className="hero-vignette" aria-hidden="true" />
             </div>
 
-            <div className="hero-frame" aria-hidden="true"><i /><i /><i /><i /></div>
-            <div className="hero-orbit hero-orbit-original" aria-hidden="true"><span>∞</span></div>
-            <div className="hero-logo-quarter-stage" aria-hidden="true">
-              <div className="hero-logo-quarter-motion">
-                <div className="hero-orbiting-logo">
-                  {Array.from({ length: 8 }, (_, index) => (
-                    <span className={`hero-logo-satellite is-${index + 1}`} key={index}><i /></span>
-                  ))}
-                  <Image
-                    src="/sense-scene-symbol.png"
-                    alt=""
-                    width={343}
-                    height={638}
-                    sizes="(max-width: 760px) 104px, 168px"
-                  />
+            <div className="hero-frame">
+              <i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" />
+              <div className="hero-frame-content" aria-hidden="true">
+                <div className="hero-orbit hero-orbit-original"><span>∞</span></div>
+                <div className="hero-logo-quarter-stage">
+                  <div className="hero-logo-quarter-motion">
+                    <div className="hero-orbiting-logo">
+                      {Array.from({ length: 8 }, (_, index) => (
+                        <span className={`hero-logo-satellite is-${index + 1}`} key={index}><i /></span>
+                      ))}
+                      <Image
+                        src="/sense-scene-symbol.png"
+                        alt=""
+                        width={343}
+                        height={638}
+                        sizes="(max-width: 760px) 104px, 168px"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
+              <LiveClock locale={locale} />
             </div>
             <div className="hero-particles" aria-hidden="true">
               {Array.from({ length: 18 }, (_, index) => <span key={index} />)}
@@ -1439,8 +1444,6 @@ export default function Home() {
               <span>{t.hero.location}</span>
               <span>{t.hero.independent}</span>
             </div>
-
-            <LiveClock locale={locale} />
 
             <div className="hero-copy">
               <p className="hero-disciplines">{t.hero.disciplines}</p>
