@@ -924,11 +924,22 @@ export default function Home() {
           },
         });
 
-        // Restore the original central orbit and keep its scroll-linked spin.
-        gsap.set(".hero-orbit-original", { xPercent: 0, yPercent: 0 });
-        gsap.to(".hero-orbit-original", {
+        // Add scroll rotation on top of each orbit's continuous idle rotation.
+        gsap.to(".hero-orbit-scroll-ring", {
           rotate: 150,
           scale: 1.1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1,
+          },
+        });
+
+        gsap.to(".hero-orbit-scroll-drive", {
+          rotate: (index) => index === 0 ? -125 : 115,
+          scale: 1.05,
           ease: "none",
           scrollTrigger: {
             trigger: ".hero",
@@ -1407,21 +1418,41 @@ export default function Home() {
             <div className="hero-frame">
               <i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" />
               <div className="hero-frame-content" aria-hidden="true">
-                <div className="hero-orbit hero-orbit-original"><span>∞</span></div>
-                <div className="hero-logo-quarter-stage">
-                  <div className="hero-logo-quarter-motion">
-                    <div className="hero-orbiting-logo">
-                      {Array.from({ length: 8 }, (_, index) => (
-                        <span className={`hero-logo-satellite is-${index + 1}`} key={index}><i /></span>
-                      ))}
-                      <Image
-                        src="/sense-scene-symbol.png"
-                        alt=""
-                        width={343}
-                        height={638}
-                        sizes="(max-width: 760px) 104px, 168px"
-                      />
+                <div className="hero-orbit hero-orbit-original">
+                  <div className="hero-orbit-scroll-plane">
+                    <div className="hero-orbit-scroll-ring">
+                      <div className="hero-orbit-ring">
+                        <i className="hero-orbit-planet is-1" />
+                        <i className="hero-orbit-planet is-2" />
+                        <i className="hero-orbit-planet is-7" />
+                        <i className="hero-orbit-planet is-8" />
+                      </div>
                     </div>
+                  </div>
+                  <div className="hero-orbit-plane is-a">
+                    <div className="hero-orbit-scroll-drive is-a">
+                      <div className="hero-orbit-ring">
+                        <i className="hero-orbit-planet is-3" />
+                        <i className="hero-orbit-planet is-4" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="hero-orbit-plane is-b">
+                    <div className="hero-orbit-scroll-drive is-b">
+                      <div className="hero-orbit-ring">
+                        <i className="hero-orbit-planet is-5" />
+                        <i className="hero-orbit-planet is-6" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="hero-logo-timer-knob">
+                    <Image
+                      src="/sense-scene-symbol.png"
+                      alt=""
+                      width={343}
+                      height={638}
+                      sizes="(max-width: 760px) 78px, 170px"
+                    />
                   </div>
                 </div>
               </div>
