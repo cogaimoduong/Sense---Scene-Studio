@@ -7753,9 +7753,9 @@ html[lang^="vi"] .statement h2 > span.accent:nth-child(2) {
 
 @media (max-width: 760px) {
   .hero-frame-content .hero-orbit {
-    top: -18px;
+    top: 0;
     width: min(92cqw, 82cqh, 520px);
-    translate: -6% -12%;
+    translate: 0 0;
   }
 
   .hero-background {
@@ -7878,16 +7878,17 @@ html[lang^="vi"] .statement h2 > span.accent:nth-child(2) {
   }
 
   .hero-frame > .live-clock {
-    inset: auto 8px 118px auto;
+    inset: calc(100svh - var(--header-h) - 150px) auto auto 50vw;
     right: auto !important;
-    left: 52vw !important;
-    width: min(170px, 46vw);
+    bottom: auto !important;
+    left: 50vw !important;
+    width: min(200px, 52vw);
     min-height: 92px;
-    max-width: calc(100% - 16px);
+    max-width: 52vw;
     padding: 10px;
     gap: 6px;
     box-sizing: border-box;
-    transform: none;
+    transform: translateX(-50%);
   }
 
   .hero-frame > .live-clock strong {
@@ -7931,8 +7932,8 @@ html[lang^="vi"] .statement h2 > span.accent:nth-child(2) {
 
 @media (max-width: 380px) {
   .hero-frame-content .hero-orbit {
-    top: -24px;
+    top: 0;
     width: min(90cqw, 76cqh, 410px);
-    translate: -5% -14%;
+    translate: 0 0;
   }
 }
