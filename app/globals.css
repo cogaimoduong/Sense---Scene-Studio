@@ -7866,8 +7866,10 @@ html[lang^="vi"] .statement h2 > span.accent:nth-child(2) {
   }
 
   .hero-copy {
-    top: auto;
-    bottom: clamp(132px, 17svh, 145px);
+    top: calc(71svh + 10px);
+    bottom: auto;
+    width: 52vw;
+    max-width: 52vw;
   }
 
   .live-clock {
@@ -7878,17 +7880,17 @@ html[lang^="vi"] .statement h2 > span.accent:nth-child(2) {
   }
 
   .hero-frame > .live-clock {
-    inset: calc(100svh - var(--header-h) - 150px) auto auto 50vw;
+    inset: calc(71svh - var(--header-h) + 22px) auto auto 62vw;
     right: auto !important;
     bottom: auto !important;
-    left: 50vw !important;
-    width: min(200px, 52vw);
+    left: 62vw !important;
+    width: min(145px, 37vw);
     min-height: 92px;
-    max-width: 52vw;
+    max-width: 37vw;
     padding: 10px;
     gap: 6px;
     box-sizing: border-box;
-    transform: translateX(-50%);
+    transform: none;
   }
 
   .hero-frame > .live-clock strong {
@@ -7919,6 +7921,7 @@ html[lang^="vi"] .statement h2 > span.accent:nth-child(2) {
   }
 
   .hero-brand-lockup {
+    --hero-brand-size: clamp(21px, 6.2vw, 26px);
     max-width: 100%;
     transform-origin: left bottom;
   }
