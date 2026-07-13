@@ -1,5 +1,29 @@
 import type { Metadata, Viewport } from "next";
+import { Anybody, Bodoni_Moda, Lexend_Peta } from "next/font/google";
 import "./globals.css";
+
+const lexendPeta = Lexend_Peta({
+  subsets: ["latin"],
+  weight: "variable",
+  display: "swap",
+  variable: "--font-lexend-peta",
+});
+
+const anybody = Anybody({
+  subsets: ["latin"],
+  weight: "variable",
+  axes: ["wdth"],
+  display: "swap",
+  variable: "--font-anybody",
+});
+
+const bodoniModa = Bodoni_Moda({
+  subsets: ["latin"],
+  weight: "500",
+  style: "italic",
+  display: "swap",
+  variable: "--font-bodoni-moda",
+});
 
 export const metadata: Metadata = {
   title: "Sense & Scene Studio — CGI, Motion & Visual Technology",
@@ -26,7 +50,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${lexendPeta.variable} ${anybody.variable} ${bodoniModa.variable}`}>{children}</body>
     </html>
   );
 }

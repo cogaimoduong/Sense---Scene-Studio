@@ -14,7 +14,7 @@ import {
   SkipForward,
   X,
 } from "lucide-react";
-import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Lenis from "lenis";
 import gsap from "gsap";
@@ -157,104 +157,121 @@ function LiveClock({ locale }: { locale: Locale }) {
 }
 
 function PageLoader() {
-  const [started, setStarted] = useState(false);
+  const [videoSource, setVideoSource] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [visible, setVisible] = useState(true);
+  const finishingRef = useRef(false);
+  const fadeStartedRef = useRef(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fadeFrameRef = useRef<number | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
+
+  const finishLoader = useCallback((fadeDuration = 280) => {
+    if (finishingRef.current) return;
+
+    finishingRef.current = true;
+    setLeaving(true);
+    hideTimerRef.current = window.setTimeout(() => {
+      setVisible(false);
+      document.body.classList.remove("page-loading");
+    }, fadeDuration);
+  }, []);
+
+  const monitorVideoFade = useCallback(function monitorVideoFade() {
+    const video = videoRef.current;
+    if (!video || finishingRef.current) return;
+
+    if (Number.isFinite(video.duration) && video.duration - video.currentTime <= 0.3) {
+      fadeStartedRef.current = true;
+      setLeaving(true);
+      return;
+    }
+
+    fadeFrameRef.current = window.requestAnimationFrame(monitorVideoFade);
+  }, []);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     document.body.classList.add("page-loading");
 
-    const frame = window.requestAnimationFrame(() => setStarted(true));
-    const leaveTimer = window.setTimeout(() => setLeaving(true), reduceMotion ? 420 : 2700);
-    const doneTimer = window.setTimeout(() => {
-      setVisible(false);
-      document.body.classList.remove("page-loading");
-    }, reduceMotion ? 700 : 3500);
+    if (reduceMotion) {
+      const reducedMotionTimer = window.setTimeout(() => finishLoader(180), 420);
+
+      return () => {
+        window.clearTimeout(reducedMotionTimer);
+        if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
+        if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
+        document.body.classList.remove("page-loading");
+      };
+    }
+
+    const connection = (window.navigator as Navigator & {
+      connection?: { effectiveType?: string; saveData?: boolean };
+    }).connection;
+    const constrainedNetwork = connection?.saveData
+      || connection?.effectiveType === "slow-2g"
+      || connection?.effectiveType === "2g"
+      || connection?.effectiveType === "3g";
+    const physicalLongEdge = Math.max(window.innerWidth, window.innerHeight) * window.devicePixelRatio;
+    const use4k = !constrainedNetwork && window.innerWidth >= 1280 && physicalLongEdge >= 2560;
+
+    setVideoSource(use4k
+      ? "/loading/keycap-liquid-loader-4k.mp4"
+      : "/loading/keycap-liquid-loader-1080.mp4");
+
+    const hardStopTimer = window.setTimeout(() => finishLoader(), 7000);
 
     return () => {
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(leaveTimer);
-      window.clearTimeout(doneTimer);
+      window.clearTimeout(hardStopTimer);
+      if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
+      if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
       document.body.classList.remove("page-loading");
     };
-  }, []);
+  }, [finishLoader]);
 
   if (!visible) return null;
 
   return (
     <div
-      className={`page-loader ${started ? "is-forming" : ""} ${leaving ? "is-leaving" : ""}`}
+      className={`page-loader page-loader--video ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}
       role="status"
       aria-label="Loading Sense and Scene Studio"
     >
-      <div className="page-loader-grid" aria-hidden="true" />
-      <div className="page-loader-stars" aria-hidden="true">
-        {Array.from({ length: 104 }, (_, index) => {
-          const angle = (index / 104) * Math.PI * 2;
-          const x = 50 + 38 * Math.cos(angle);
-          const y = 50 + 18 * Math.sin(angle * 2);
-          const seedX = Math.sin((index + 1) * 12.9898) * 43758.5453;
-          const seedY = Math.sin((index + 11) * 78.233) * 43758.5453;
-          const dx = ((seedX - Math.floor(seedX)) - 0.5) * 150;
-          const dy = ((seedY - Math.floor(seedY)) - 0.5) * 120;
-          const style = {
-            "--loader-x": `${x.toFixed(4)}%`,
-            "--loader-y": `${y.toFixed(4)}%`,
-            "--loader-dx": `${dx.toFixed(3)}vw`,
-            "--loader-dy": `${dy.toFixed(3)}vh`,
-            "--loader-delay": `${(index % 17) * 32}ms`,
-            "--loader-size": ["1px", "1.65px", "2.3px", "2.95px"][index % 4],
-          } as CSSProperties;
-
-          return <i className="page-loader-star" style={style} key={index} />;
-        })}
-      </div>
-
-      <div className="page-loader-infinity" aria-hidden="true">
-        <span className="page-loader-loop-glow is-left" />
-        <span className="page-loader-loop-glow is-right" />
-        <span className="page-loader-prism" />
-        <span className="page-loader-flare" />
-        <div className="page-loader-sparks">
-          {Array.from({ length: 12 }, (_, index) => (
-            <i
-              className="page-loader-spark"
-              key={index}
-              style={{
-                "--spark-angle": `${index * 30}deg`,
-                "--spark-distance": `${76 + (index % 4) * 22}px`,
-                "--spark-delay": `${index * 18}ms`,
-              } as CSSProperties}
-            />
-          ))}
-        </div>
-        <svg viewBox="0 0 200 100" focusable="false">
-          <defs>
-            <linearGradient id="loader-infinity-gradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#61f1ff" />
-              <stop offset="0.48" stopColor="#f5f5ff" />
-              <stop offset="1" stopColor="#8f79ff" />
-            </linearGradient>
-          </defs>
-          <path
-            className="page-loader-orbit-glow"
-            d="M100 50 C82 24 62 18 44 22 C18 28 18 72 44 78 C62 82 82 76 100 50 C118 24 138 18 156 22 C182 28 182 72 156 78 C138 82 118 76 100 50"
+      <div className="page-loader-video-shell" aria-hidden="true">
+        {videoSource && (
+          <video
+            ref={videoRef}
+            className="page-loader-video"
+            src={videoSource}
+            poster="/loading/keycap-liquid-loader-poster.jpg"
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            controls={false}
+            disablePictureInPicture
+            tabIndex={-1}
+            onCanPlay={(event) => {
+              setReady(true);
+              void event.currentTarget.play().catch(() => finishLoader());
+            }}
+            onPlaying={() => {
+              setReady(true);
+              if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
+              fadeFrameRef.current = window.requestAnimationFrame(monitorVideoFade);
+            }}
+            onTimeUpdate={(event) => {
+              const video = event.currentTarget;
+              if (!fadeStartedRef.current && video.duration - video.currentTime <= 0.3) {
+                fadeStartedRef.current = true;
+                setLeaving(true);
+              }
+            }}
+            onEnded={() => finishLoader(fadeStartedRef.current ? 40 : 280)}
+            onError={() => finishLoader()}
           />
-          <path
-            className="page-loader-orbit"
-            d="M100 50 C82 24 62 18 44 22 C18 28 18 72 44 78 C62 82 82 76 100 50 C118 24 138 18 156 22 C182 28 182 72 156 78 C138 82 118 76 100 50"
-          />
-          <path
-            className="page-loader-orbit-pulse"
-            d="M100 50 C82 24 62 18 44 22 C18 28 18 72 44 78 C62 82 82 76 100 50 C118 24 138 18 156 22 C182 28 182 72 156 78 C138 82 118 76 100 50"
-          />
-        </svg>
-      </div>
-
-      <div className="page-loader-brand" aria-hidden="true">
-        <small>VISUAL TECHNOLOGY STUDIO</small>
-        <div><span>SENSE</span><i>&amp;</i><span>SCENE</span></div>
+        )}
       </div>
     </div>
   );
@@ -687,7 +704,7 @@ function Header({
 }
 
 const textSelectors = [
-  ".hero-word-sense-prefix", ".hero-anchor-stack", ".hero-studio", ".hero-meta span", ".hero-copy p", ".hero-bottom p", ".hero-scroll-cta", ".live-clock span", ".live-clock strong", ".live-clock i", ".live-clock small",
+  ".hero-word-sense", ".hero-ampersand", ".hero-word-scene", ".hero-studio", ".hero-meta span", ".hero-copy p", ".hero-bottom p", ".hero-scroll-cta", ".live-clock span", ".live-clock strong", ".live-clock i", ".live-clock small",
   ".statement h2 span", ".statement-copy",
   ".services h2 span", ".services .section-heading p", ".service-row h3", ".service-row p", ".service-row li", ".services .text-link",
   ".projects h2 span", ".projects .section-heading p", ".project-info h3", ".project-info p",
@@ -852,17 +869,23 @@ export default function Home() {
   }, [locale]);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     // Initial entrance animations
     const tl = gsap.timeline();
     tl.fromTo(".site-header",
       { yPercent: -100, opacity: 0 },
       { yPercent: 0, opacity: 1, duration: 0.9, ease: "power3.out" }
     );
-    tl.fromTo(".hero-word-sense-prefix, .hero-anchor-stack, .hero-studio",
+    tl.fromTo(".hero-word-sense, .hero-ampersand, .hero-word-scene, .hero-studio",
       { yPercent: 110, rotate: 1.5, opacity: 0 },
       { yPercent: 0, rotate: 0, opacity: 1, stagger: 0.12, duration: 1.1, ease: "power4.out" },
       "-=0.6"
     );
+
+    return () => {
+      tl.kill();
+    };
   }, []);
 
   useEffect(() => {
@@ -1479,18 +1502,12 @@ export default function Home() {
             <div className="hero-copy">
               <p className="hero-disciplines">{t.hero.disciplines}</p>
               <div className="hero-brand-lockup">
-                <h1 className="hero-title" id="hero-title">
-                  <span className="hero-word-sense-prefix">S</span>
-                  <span className="hero-anchor-stack">
-                    <span className="hero-sense-end">
-                      <span className="hero-word-sense-anchor">E</span>
-                      <span className="hero-word-sense-suffix">NSE</span>
-                      <em className="hero-ampersand">&amp;</em>
-                    </span>
-                    <span className="hero-word-scene">SCENE</span>
-                  </span>
+                <h1 className="hero-title" id="hero-title" aria-label="Sense & Scene Studio">
+                  <span className="hero-word-sense" aria-hidden="true">Sense</span>
+                  <em className="hero-ampersand" aria-hidden="true">&amp;</em>
+                  <span className="hero-word-scene" aria-hidden="true">Scene</span>
+                  <span className="hero-studio" aria-hidden="true">Studio</span>
                 </h1>
-                <strong className="hero-studio"><span>STUDIO</span></strong>
               </div>
             </div>
 
