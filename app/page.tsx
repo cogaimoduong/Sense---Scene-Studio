@@ -24,13 +24,6 @@ import { localeOptions, translations, type Locale } from "./i18n";
 
 type Copy = (typeof translations)[Locale];
 
-const serviceMedia = [
-  ["/spatial-light-installation.png", "/studio-key-visual-v2.png"],
-  ["/studio-key-visual-v2.png", "/infinity-key-visual.png"],
-  ["/spatial-light-installation.png", "/infinity-key-visual.png"],
-  ["/infinity-key-visual.png", "/studio-key-visual-v2.png"],
-];
-
 const audioTracks = [
   { title: "The Morning Render", src: "/audio/the-morning-render.mp3" },
   { title: "Glass Walls At Dawn", src: "/audio/glass-walls-at-dawn.mp3" },
@@ -162,9 +155,7 @@ function PageLoader() {
   const [leaving, setLeaving] = useState(false);
   const [visible, setVisible] = useState(true);
   const finishingRef = useRef(false);
-  const fadeStartedRef = useRef(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const fadeFrameRef = useRef<number | null>(null);
+  const startupTimerRef = useRef<number | null>(null);
   const hideTimerRef = useRef<number | null>(null);
 
   const finishLoader = useCallback((fadeDuration = 280) => {
@@ -178,19 +169,6 @@ function PageLoader() {
     }, fadeDuration);
   }, []);
 
-  const monitorVideoFade = useCallback(function monitorVideoFade() {
-    const video = videoRef.current;
-    if (!video || finishingRef.current) return;
-
-    if (Number.isFinite(video.duration) && video.duration - video.currentTime <= 0.3) {
-      fadeStartedRef.current = true;
-      setLeaving(true);
-      return;
-    }
-
-    fadeFrameRef.current = window.requestAnimationFrame(monitorVideoFade);
-  }, []);
-
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     document.body.classList.add("page-loading");
@@ -200,31 +178,19 @@ function PageLoader() {
 
       return () => {
         window.clearTimeout(reducedMotionTimer);
-        if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
         if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
         document.body.classList.remove("page-loading");
       };
     }
 
-    const connection = (window.navigator as Navigator & {
-      connection?: { effectiveType?: string; saveData?: boolean };
-    }).connection;
-    const constrainedNetwork = connection?.saveData
-      || connection?.effectiveType === "slow-2g"
-      || connection?.effectiveType === "2g"
-      || connection?.effectiveType === "3g";
-    const physicalLongEdge = Math.max(window.innerWidth, window.innerHeight) * window.devicePixelRatio;
-    const use4k = !constrainedNetwork && window.innerWidth >= 1280 && physicalLongEdge >= 2560;
+    setVideoSource("/loading/keycap-liquid-loader-full.mp4");
 
-    setVideoSource(use4k
-      ? "/loading/keycap-liquid-loader-4k.mp4"
-      : "/loading/keycap-liquid-loader-1080.mp4");
-
-    const hardStopTimer = window.setTimeout(() => finishLoader(), 7000);
+    // Escape only if playback cannot start; once playing, the video's own
+    // `ended` event controls the full-screen animation duration.
+    startupTimerRef.current = window.setTimeout(() => finishLoader(), 7000);
 
     return () => {
-      window.clearTimeout(hardStopTimer);
-      if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
+      if (startupTimerRef.current) window.clearTimeout(startupTimerRef.current);
       if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
       document.body.classList.remove("page-loading");
     };
@@ -241,7 +207,6 @@ function PageLoader() {
       <div className="page-loader-video-shell" aria-hidden="true">
         {videoSource && (
           <video
-            ref={videoRef}
             className="page-loader-video"
             src={videoSource}
             poster="/loading/keycap-liquid-loader-poster.jpg"
@@ -258,17 +223,12 @@ function PageLoader() {
             }}
             onPlaying={() => {
               setReady(true);
-              if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
-              fadeFrameRef.current = window.requestAnimationFrame(monitorVideoFade);
-            }}
-            onTimeUpdate={(event) => {
-              const video = event.currentTarget;
-              if (!fadeStartedRef.current && video.duration - video.currentTime <= 0.3) {
-                fadeStartedRef.current = true;
-                setLeaving(true);
+              if (startupTimerRef.current) {
+                window.clearTimeout(startupTimerRef.current);
+                startupTimerRef.current = null;
               }
             }}
-            onEnded={() => finishLoader(fadeStartedRef.current ? 40 : 280)}
+            onEnded={() => finishLoader()}
             onError={() => finishLoader()}
           />
         )}
@@ -1322,9 +1282,12 @@ export default function Home() {
     const serviceRows = document.querySelectorAll<HTMLElement>(".service-row");
     const serviceCleanups: Array<() => void> = [];
 
-    if (!reduceMotion && !window.matchMedia("(max-width: 760px)").matches) {
+    const isMobileServices = window.matchMedia("(max-width: 760px)").matches;
+
+    if (!reduceMotion && !isMobileServices) {
       serviceRows.forEach((row) => {
         const media = row.querySelector<HTMLElement>(".service-media");
+        const video = row.querySelector<HTMLVideoElement>(".service-media-video");
         if (!media) return;
 
         let lastX = 0;
@@ -1359,10 +1322,15 @@ export default function Home() {
         };
 
         const onRowEnter = () => {
+          if (video) {
+            video.currentTime = 0;
+            void video.play().catch(() => undefined);
+          }
           gsap.to(media, { autoAlpha: 1, scale: 1.05, duration: 0.4, ease: "power2.out" });
         };
 
         const onRowLeave = () => {
+          video?.pause();
           gsap.to(media, { autoAlpha: 0, scale: 0.9, duration: 0.4, ease: "power2.in" });
         };
 
@@ -1374,7 +1342,29 @@ export default function Home() {
           row.removeEventListener("pointermove", onRowMove);
           row.removeEventListener("pointerenter", onRowEnter);
           row.removeEventListener("pointerleave", onRowLeave);
+          video?.pause();
         });
+      });
+    }
+
+    if (!reduceMotion && isMobileServices) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target.querySelector<HTMLVideoElement>(".service-media-video");
+          if (!video) return;
+
+          if (entry.isIntersecting) {
+            void video.play().catch(() => undefined);
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: 0.35 });
+
+      serviceRows.forEach((row) => observer.observe(row));
+      serviceCleanups.push(() => {
+        observer.disconnect();
+        serviceRows.forEach((row) => row.querySelector<HTMLVideoElement>(".service-media-video")?.pause());
       });
     }
 
@@ -1561,11 +1551,18 @@ export default function Home() {
                   {service.tags.map((tag) => <li key={tag}>{tag}</li>)}
                 </ul>
                 <div className="service-media" aria-hidden="true">
-                  {serviceMedia[serviceIndex].map((src, imageIndex) => (
-                    <figure key={src} className={imageIndex === 0 ? "media-primary" : "media-secondary"}>
-                      <Image src={src} alt="" fill sizes="(max-width: 860px) 88vw, 28vw" />
-                    </figure>
-                  ))}
+                  <video
+                    className="service-media-video"
+                    src="/services/loop-sign-motivation.mp4"
+                    poster="/services/loop-sign-motivation-poster.jpg"
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    controls={false}
+                    disablePictureInPicture
+                    tabIndex={-1}
+                  />
                 </div>
                 <ArrowUpRight className="service-arrow" size={22} aria-hidden="true" />
               </article>
