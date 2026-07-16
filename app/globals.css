@@ -8209,3 +8209,53 @@ html[lang] .footer-wordmark {
   text-shadow: 0 5px 22px rgba(143, 121, 255, 0.22);
   -webkit-text-fill-color: currentColor;
 }
+
+/* Keep the 720p hero footage crisp and blend its edges into the scene. */
+.hero-media {
+  background:
+    radial-gradient(ellipse at 82% 58%, rgba(70, 50, 142, 0.16), transparent 38%),
+    #000;
+}
+
+@media (min-width: 761px) {
+  .hero-video {
+    inset: 50% auto auto 50%;
+    width: min(100vw, 1280px);
+    height: min(100svh, 720px);
+    max-width: 1280px;
+    max-height: 720px;
+    object-fit: contain;
+    object-position: 50% 50%;
+    filter: contrast(1.04) saturate(1.02);
+    transform: translate(-50%, -50%);
+    backface-visibility: hidden;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    background:
+      radial-gradient(ellipse at 86% 52%, rgba(70, 50, 142, 0.2), transparent 42%),
+      #000;
+    filter: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-video {
+    inset: calc(var(--header-h) + 14px) 0 auto !important;
+    width: 100% !important;
+    height: calc(100svh - var(--header-h) - 14px - 29vh) !important;
+    max-width: none;
+    object-fit: contain !important;
+    object-position: 50% 50% !important;
+    filter: contrast(1.04) saturate(1.02);
+    transform: none !important;
+    backface-visibility: hidden;
+  }
+}
