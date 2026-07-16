@@ -149,94 +149,6 @@ function LiveClock({ locale }: { locale: Locale }) {
   );
 }
 
-function PageLoader() {
-  const [videoSource, setVideoSource] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
-  const [leaving, setLeaving] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const finishingRef = useRef(false);
-  const startupTimerRef = useRef<number | null>(null);
-  const hideTimerRef = useRef<number | null>(null);
-
-  const finishLoader = useCallback((fadeDuration = 280) => {
-    if (finishingRef.current) return;
-
-    finishingRef.current = true;
-    setLeaving(true);
-    hideTimerRef.current = window.setTimeout(() => {
-      setVisible(false);
-      document.body.classList.remove("page-loading");
-    }, fadeDuration);
-  }, []);
-
-  useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    document.body.classList.add("page-loading");
-
-    if (reduceMotion) {
-      const reducedMotionTimer = window.setTimeout(() => finishLoader(180), 420);
-
-      return () => {
-        window.clearTimeout(reducedMotionTimer);
-        if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
-        document.body.classList.remove("page-loading");
-      };
-    }
-
-    setVideoSource("/loading/keycap-liquid-loader-full.mp4");
-
-    // Escape only if playback cannot start; once playing, the video's own
-    // `ended` event controls the full-screen animation duration.
-    startupTimerRef.current = window.setTimeout(() => finishLoader(), 7000);
-
-    return () => {
-      if (startupTimerRef.current) window.clearTimeout(startupTimerRef.current);
-      if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
-      document.body.classList.remove("page-loading");
-    };
-  }, [finishLoader]);
-
-  if (!visible) return null;
-
-  return (
-    <div
-      className={`page-loader page-loader--video ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}
-      role="status"
-      aria-label="Loading Sense and Scene Studio"
-    >
-      <div className="page-loader-video-shell" aria-hidden="true">
-        {videoSource && (
-          <video
-            className="page-loader-video"
-            src={videoSource}
-            poster="/loading/keycap-liquid-loader-poster.jpg"
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            controls={false}
-            disablePictureInPicture
-            tabIndex={-1}
-            onCanPlay={(event) => {
-              setReady(true);
-              void event.currentTarget.play().catch(() => finishLoader());
-            }}
-            onPlaying={() => {
-              setReady(true);
-              if (startupTimerRef.current) {
-                window.clearTimeout(startupTimerRef.current);
-                startupTimerRef.current = null;
-              }
-            }}
-            onEnded={() => finishLoader()}
-            onError={() => finishLoader()}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
 function AudioPlayer({ locale }: { locale: Locale }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -1380,7 +1292,6 @@ export default function Home() {
 
   return (
     <main ref={pageRef} id="top">
-      <PageLoader />
       {/* ─── AMBIENT GRID & GLOW ─── */}
       <div className="ambient-grid" aria-hidden="true">
         <div className="noise-field" />
