@@ -1326,22 +1326,23 @@ export default function Home() {
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-sticky">
             <div className="hero-media" ref={heroMediaRef}>
-              <Image
-                className="hero-background"
-                src="/hero-spatial-background.png"
-                alt=""
-                fill
-                priority
-                quality={92}
-                sizes="100vw"
+              <video
+                className="hero-video"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
                 aria-hidden="true"
-              />
+              >
+                <source src="/loading/keycap-liquid-loader-full.mp4" type="video/mp4" />
+              </video>
               <div className="hero-vignette" aria-hidden="true" />
             </div>
 
             <div className="hero-frame">
               <i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" /><i aria-hidden="true" />
-              <div className="hero-frame-content" aria-hidden="true">
+              <div className="hero-frame-content" aria-hidden="true" hidden>
                 <div className="hero-orbit hero-orbit-original">
                   <div className="hero-orbit-scroll-plane">
                     <div className="hero-orbit-scroll-ring">
