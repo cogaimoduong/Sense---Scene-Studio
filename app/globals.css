@@ -8259,3 +8259,94 @@ html[lang] .footer-wordmark {
     backface-visibility: hidden;
   }
 }
+
+/* Performance budget: keep the art direction, but make decoration static. */
+.noise-field,
+.light-mesh,
+.scan-field,
+.aurora-band,
+.precision-ring,
+.precision-ring::after,
+.hero-media::before,
+.hero-particles span,
+.project-background .project-media.is-active {
+  animation: none !important;
+}
+
+body.motion-lite .ambient-grid,
+main[data-motion="lite"] .ambient-grid {
+  display: none;
+}
+
+body.motion-lite .hero-media::before,
+main[data-motion="lite"] .hero-media::before {
+  animation: none !important;
+}
+
+body.motion-lite .hero-particles,
+main[data-motion="lite"] .hero-particles,
+body.motion-lite .hero-data-rain,
+main[data-motion="lite"] .hero-data-rain,
+body.motion-lite .hero-prism-field,
+main[data-motion="lite"] .hero-prism-field {
+  display: none;
+}
+
+body.motion-lite .live-clock,
+main[data-motion="lite"] .live-clock {
+  background: rgba(3, 4, 8, 0.84);
+  backdrop-filter: none;
+}
+
+body.motion-lite .live-clock::before,
+main[data-motion="lite"] .live-clock::before {
+  display: none;
+}
+
+body.motion-lite .live-clock::after,
+main[data-motion="lite"] .live-clock::after {
+  animation: none !important;
+  opacity: 0.22;
+}
+
+body.motion-lite .site-header,
+main[data-motion="lite"] .site-header,
+body.motion-lite .music-player-bar,
+main[data-motion="lite"] .music-player-bar {
+  backdrop-filter: none;
+}
+
+body.motion-lite .hero-media,
+main[data-motion="lite"] .hero-media,
+body.motion-lite .hero-video,
+main[data-motion="lite"] .hero-video {
+  filter: none !important;
+}
+
+body.motion-lite .project-mobile-media::after,
+main[data-motion="lite"] .project-mobile-media::after,
+body.motion-lite .lab-visual::before,
+main[data-motion="lite"] .lab-visual::before {
+  display: none;
+}
+
+body.motion-lite .footer-energy,
+main[data-motion="lite"] .footer-energy,
+body.motion-lite .footer-wordmark,
+main[data-motion="lite"] .footer-wordmark {
+  animation: none !important;
+}
+
+body.motion-lite .custom-cursor,
+main[data-motion="lite"] .custom-cursor {
+  display: none;
+}
+
+@media (pointer: fine) {
+  body.motion-lite,
+  body.motion-lite a,
+  body.motion-lite button,
+  body.motion-lite [data-cursor] {
+    cursor: auto;
+  }
+}
