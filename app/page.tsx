@@ -16,9 +16,7 @@ import {
 } from "lucide-react";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import Lenis from "lenis";
 import gsap from "gsap";
-import { Flip } from "gsap/Flip";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { localeOptions, translations, type Locale } from "./i18n";
 
@@ -32,6 +30,26 @@ const audioTracks = [
 ] as const;
 
 type PlaybackMode = "playlist" | "repeat-one";
+
+type NavigatorPerformanceHints = Navigator & {
+  connection?: { saveData?: boolean };
+  deviceMemory?: number;
+};
+
+function shouldUseLiteMotion() {
+  if (typeof window === "undefined") return true;
+
+  const navigatorWithHints = navigator as NavigatorPerformanceHints;
+  const hasLowMemory = navigatorWithHints.deviceMemory !== undefined
+    && navigatorWithHints.deviceMemory <= 4;
+  const hasFewCores = navigator.hardwareConcurrency > 0
+    && navigator.hardwareConcurrency <= 4;
+
+  return window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches
+    || navigatorWithHints.connection?.saveData === true
+    || hasLowMemory
+    || hasFewCores;
+}
 
 const audioPlayerCopy: Record<Locale, {
   soundtrack: string;
@@ -336,12 +354,96 @@ function AudioPlayer({ locale }: { locale: Locale }) {
   );
 }
 
-function CustomCursor() {
+function DeferredVideo({
+  className,
+  src,
+  poster,
+  active = true,
+  load = true,
+}: {
+  className?: string;
+  src: string;
+  poster?: string;
+  active?: boolean;
+  load?: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !load) return;
+
+    if (!("IntersectionObserver" in window)) {
+      setIsVisible(true);
+      setHasLoaded(true);
+      return;
+    }
+
+    const loadObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setHasLoaded(true);
+      },
+      { rootMargin: "320px 0px", threshold: 0.01 },
+    );
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.01 },
+    );
+
+    loadObserver.observe(video);
+    visibilityObserver.observe(video);
+    return () => {
+      loadObserver.disconnect();
+      visibilityObserver.disconnect();
+    };
+  }, [load]);
+
+  useEffect(() => {
+    if (hasLoaded) videoRef.current?.load();
+  }, [hasLoaded]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !hasLoaded) return;
+
+    const syncPlayback = () => {
+      if (active && isVisible && !document.hidden) {
+        void video.play().catch(() => undefined);
+      } else {
+        video.pause();
+      }
+    };
+
+    syncPlayback();
+    document.addEventListener("visibilitychange", syncPlayback);
+    return () => document.removeEventListener("visibilitychange", syncPlayback);
+  }, [active, hasLoaded, isVisible]);
+
+  return (
+    <video
+      ref={videoRef}
+      className={className}
+      loop
+      muted
+      playsInline
+      preload={hasLoaded ? "metadata" : "none"}
+      poster={poster}
+      disablePictureInPicture
+      aria-hidden="true"
+    >
+      {hasLoaded && <source src={src} type="video/mp4" />}
+    </video>
+  );
+}
+
+function CustomCursor({ enabled }: { enabled: boolean }) {
   const cursorRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    if (!enabled || window.matchMedia("(pointer: coarse)").matches) return;
 
     let pointerX = -80;
     let pointerY = -80;
@@ -394,7 +496,7 @@ function CustomCursor() {
         target.removeEventListener("mouseleave", onLeave);
       });
     };
-  }, []);
+  }, [enabled]);
 
   return (
     <div className="custom-cursor" ref={cursorRef} aria-hidden="true">
@@ -586,15 +688,78 @@ const textSelectors = [
 
 export default function Home() {
   const pageRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const heroMediaRef = useRef<HTMLDivElement>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [activeProject, setActiveProject] = useState(0);
   const [locale, setLocale] = useState<Locale>("en");
+  const [liteMotion, setLiteMotion] = useState(true);
   const languageTransitioningRef = useRef(false);
 
   const t = translations[locale];
   const cursor = cursorCopy[locale];
   const isCharacterLanguage = locale === "zh" || locale === "ja";
   const aboutUnits = isCharacterLanguage ? Array.from(t.about.body) : t.about.body.split(/\s+/);
+
+  useEffect(() => {
+    const motionQueries = [
+      window.matchMedia("(prefers-reduced-motion: reduce)"),
+      window.matchMedia("(pointer: coarse)"),
+    ];
+    const updateMotionMode = () => {
+      const shouldUseLite = shouldUseLiteMotion();
+      setLiteMotion(shouldUseLite);
+      document.body.classList.toggle("motion-lite", shouldUseLite);
+    };
+
+    updateMotionMode();
+    motionQueries.forEach((query) => query.addEventListener("change", updateMotionMode));
+
+    return () => {
+      motionQueries.forEach((query) => query.removeEventListener("change", updateMotionMode));
+      document.body.classList.remove("motion-lite");
+    };
+  }, []);
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    const video = heroVideoRef.current;
+    if (!hero || !video) return;
+
+    let isHeroVisible = true;
+    const syncPlayback = () => {
+      if (!liteMotion && isHeroVisible && !document.hidden) {
+        void video.play().catch(() => undefined);
+      } else {
+        video.pause();
+      }
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      syncPlayback();
+      document.addEventListener("visibilitychange", syncPlayback);
+      return () => {
+        document.removeEventListener("visibilitychange", syncPlayback);
+        video.pause();
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isHeroVisible = entry.isIntersecting;
+        syncPlayback();
+      },
+      { rootMargin: "160px 0px", threshold: 0.01 },
+    );
+
+    observer.observe(hero);
+    document.addEventListener("visibilitychange", syncPlayback);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", syncPlayback);
+      video.pause();
+    };
+  }, [liteMotion]);
 
   useEffect(() => {
     const supported = localeOptions.map((option) => option.code) as readonly string[];
@@ -613,8 +778,7 @@ export default function Home() {
   const handleLocaleChange = (newLocale: Locale) => {
     if (newLocale === locale || languageTransitioningRef.current) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) {
+    if (liteMotion) {
       setLocale(newLocale);
       return;
     }
@@ -680,7 +844,7 @@ export default function Home() {
     const targets = document.querySelectorAll(textSelectors);
     const loader = document.querySelector(".language-loader");
     const loaderParts = document.querySelectorAll(".language-loader span, .language-loader i");
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = liteMotion;
     const isMobile = window.matchMedia("(max-width: 760px)").matches;
 
     if (reduceMotion) {
@@ -738,10 +902,10 @@ export default function Home() {
         duration: isMobile ? 0.28 : 0.48,
         ease: "power4.inOut",
       }, isMobile ? 0.08 : 0.12);
-  }, [locale]);
+  }, [liteMotion, locale]);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (liteMotion) return;
 
     // Initial entrance animations
     const tl = gsap.timeline();
@@ -758,21 +922,11 @@ export default function Home() {
     return () => {
       tl.kill();
     };
-  }, []);
+  }, [liteMotion]);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger, Flip);
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const lenis = new Lenis({
-      duration: reduceMotion ? 0 : 1.1,
-      smoothWheel: !reduceMotion,
-      wheelMultiplier: 0.85,
-    });
-
-    const raf = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
-    lenis.on("scroll", ScrollTrigger.update);
+    gsap.registerPlugin(ScrollTrigger);
+    const reduceMotion = liteMotion;
 
     const context = gsap.context(() => {
       // Scroll progress bar
@@ -817,91 +971,6 @@ export default function Home() {
             scrub: 1,
             invalidateOnRefresh: true,
           },
-        });
-
-        // Add scroll rotation on top of each orbit's continuous idle rotation.
-        gsap.to(".hero-orbit-scroll-ring", {
-          rotate: 150,
-          scale: 1.1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".hero",
-            start: "top top",
-            end: "bottom top",
-            scrub: 1,
-          },
-        });
-
-        gsap.to(".hero-orbit-scroll-drive", {
-          rotate: (index) => index === 0 ? -125 : 115,
-          scale: 1.05,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".hero",
-            start: "top top",
-            end: "bottom top",
-            scrub: 1,
-          },
-        });
-
-        gsap.to(".grid-line.horizontal", {
-          scaleX: 1.65,
-          opacity: 0.48,
-          transformOrigin: "center",
-          duration: 4.5,
-          stagger: { each: 0.35, repeat: -1, yoyo: true },
-          ease: "sine.inOut",
-        });
-
-        gsap.to(".grid-line.vertical", {
-          scaleY: 1.45,
-          opacity: 0.4,
-          transformOrigin: "center",
-          duration: 5.2,
-          stagger: { each: 0.42, repeat: -1, yoyo: true },
-          ease: "sine.inOut",
-        });
-
-        gsap.to(".hero-frame > i", {
-          scale: 1.9,
-          opacity: 0.45,
-          duration: 1.9,
-          stagger: { each: 0.16, repeat: -1, yoyo: true },
-          ease: "power1.inOut",
-        });
-
-        gsap.to(".hero-particles span", {
-          y: -46,
-          x: "random(-18, 18)",
-          opacity: "random(0.28, 0.82)",
-          scale: "random(0.65, 1.55)",
-          duration: "random(2.8, 6.2)",
-          repeat: -1,
-          yoyo: true,
-          stagger: { each: 0.08, from: "random" },
-          ease: "sine.inOut",
-        });
-
-        gsap.to(".hero-data-rain span", {
-          yPercent: 130,
-          opacity: "random(0.1, 0.75)",
-          duration: "random(3.4, 7.4)",
-          repeat: -1,
-          delay: "random(0, 2.4)",
-          ease: "none",
-          stagger: { each: 0.08, from: "random" },
-        });
-
-        gsap.to(".hero-prism-field span", {
-          xPercent: "random(-16, 16)",
-          yPercent: "random(-12, 12)",
-          rotate: "random(-8, 8)",
-          opacity: "random(0.16, 0.5)",
-          duration: "random(4.5, 8)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          stagger: 0.18,
         });
 
         gsap.fromTo(
@@ -1140,30 +1209,38 @@ export default function Home() {
 
     // Hero background 3D tilt
     const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
-    const quickRotateX = gsap.quickTo(heroMediaRef.current, "rotationX", { duration: 0.55, ease: "power3.out" });
-    const quickRotateY = gsap.quickTo(heroMediaRef.current, "rotationY", { duration: 0.55, ease: "power3.out" });
+    const useInteractiveMotion = !reduceMotion && !isCoarsePointer;
+    const quickRotateX = useInteractiveMotion
+      ? gsap.quickTo(heroMediaRef.current, "rotationX", { duration: 0.55, ease: "power3.out" })
+      : null;
+    const quickRotateY = useInteractiveMotion
+      ? gsap.quickTo(heroMediaRef.current, "rotationY", { duration: 0.55, ease: "power3.out" })
+      : null;
     const ambientGlow = document.querySelector(".ambient-light-glow");
-    const quickGlowX = ambientGlow
+    const quickGlowX = useInteractiveMotion && ambientGlow
       ? gsap.quickTo(ambientGlow, "x", { duration: 0.42, ease: "power3.out" })
       : null;
-    const quickGlowY = ambientGlow
+    const quickGlowY = useInteractiveMotion && ambientGlow
       ? gsap.quickTo(ambientGlow, "y", { duration: 0.42, ease: "power3.out" })
       : null;
 
     const onPointerMove = (event: PointerEvent) => {
-      if (reduceMotion || isCoarsePointer) return;
-      quickRotateX((event.clientY / window.innerHeight - 0.5) * -4);
-      quickRotateY((event.clientX / window.innerWidth - 0.5) * 6);
+      if (!useInteractiveMotion) return;
+      quickRotateX?.((event.clientY / window.innerHeight - 0.5) * -4);
+      quickRotateY?.((event.clientX / window.innerWidth - 0.5) * 6);
       quickGlowX?.(event.clientX);
       quickGlowY?.(event.clientY);
     };
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    if (useInteractiveMotion) {
+      window.addEventListener("pointermove", onPointerMove, { passive: true });
+    }
 
     // Interactive magnetic hover elements
     const magneticElements = document.querySelectorAll("[data-magnetic]");
     const magneticCleanups: Array<() => void> = [];
 
-    magneticElements.forEach((el) => {
+    if (useInteractiveMotion) {
+      magneticElements.forEach((el) => {
       const quickX = gsap.quickTo(el, "x", { duration: 0.2, ease: "power3.out" });
       const quickY = gsap.quickTo(el, "y", { duration: 0.2, ease: "power3.out" });
       const onMove = (e: Event) => {
@@ -1188,7 +1265,8 @@ export default function Home() {
         el.removeEventListener("pointermove", onMove);
         el.removeEventListener("pointerleave", onLeave);
       });
-    });
+      });
+    }
 
     // Service row hover follow media
     const serviceRows = document.querySelectorAll<HTMLElement>(".service-row");
@@ -1196,7 +1274,7 @@ export default function Home() {
 
     const isMobileServices = window.matchMedia("(max-width: 760px)").matches;
 
-    if (!reduceMotion && !isMobileServices) {
+    if (useInteractiveMotion && !isMobileServices) {
       serviceRows.forEach((row) => {
         const media = row.querySelector<HTMLElement>(".service-media");
         const video = row.querySelector<HTMLVideoElement>(".service-media-video");
@@ -1259,7 +1337,7 @@ export default function Home() {
       });
     }
 
-    if (!reduceMotion && isMobileServices) {
+    if (useInteractiveMotion && isMobileServices) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const video = entry.target.querySelector<HTMLVideoElement>(".service-media-video");
@@ -1285,13 +1363,11 @@ export default function Home() {
       magneticCleanups.forEach((cleanup) => cleanup());
       serviceCleanups.forEach((cleanup) => cleanup());
       context.revert();
-      lenis.destroy();
-      gsap.ticker.remove(raf);
     };
-  }, [isCharacterLanguage, locale]);
+  }, [isCharacterLanguage, liteMotion, locale]);
 
   return (
-    <main ref={pageRef} id="top">
+    <main ref={pageRef} id="top" data-motion={liteMotion ? "lite" : "full"}>
       {/* ─── AMBIENT GRID & GLOW ─── */}
       <div className="ambient-grid" aria-hidden="true">
         <div className="noise-field" />
@@ -1317,22 +1393,24 @@ export default function Home() {
         <span>SCENE</span>
       </div>
 
-      <CustomCursor />
+      <CustomCursor enabled={!liteMotion} />
       <Header locale={locale} onLocaleChange={handleLocaleChange} t={t} cursor={cursor} />
       <AudioPlayer locale={locale} />
 
       <div className="site-content">
         {/* ─── HERO ─── */}
-        <section className="hero" aria-labelledby="hero-title">
+        <section className="hero" ref={heroRef} aria-labelledby="hero-title">
           <div className="hero-sticky">
             <div className="hero-media" ref={heroMediaRef}>
               <video
+                ref={heroVideoRef}
                 className="hero-video"
-                autoPlay
+                autoPlay={!liteMotion}
                 loop
                 muted
                 playsInline
-                preload="auto"
+                preload="metadata"
+                poster="/loading/keycap-liquid-loader-poster.jpg"
                 aria-hidden="true"
               >
                 <source src="/loading/keycap-liquid-loader-full.mp4" type="video/mp4" />
@@ -1384,15 +1462,7 @@ export default function Home() {
               <LiveClock locale={locale} />
             </div>
             <div className="hero-particles" aria-hidden="true">
-              {Array.from({ length: 18 }, (_, index) => <span key={index} />)}
-            </div>
-            <div className="hero-data-rain" aria-hidden="true">
-              {Array.from({ length: 22 }, (_, index) => <span key={index} />)}
-            </div>
-            <div className="hero-prism-field" aria-hidden="true">
-              <span />
-              <span />
-              <span />
+              {Array.from({ length: 8 }, (_, index) => <span key={index} />)}
             </div>
 
             <div className="hero-meta">
@@ -1470,7 +1540,7 @@ export default function Home() {
                     loop
                     muted
                     playsInline
-                    preload="metadata"
+                    preload="none"
                     controls={false}
                     disablePictureInPicture
                     tabIndex={-1}
@@ -1498,18 +1568,14 @@ export default function Home() {
 
               if (project.kind === "video") {
                 return (
-                  <video
+                  <DeferredVideo
                     key={`${project.no}-${project.src}`}
                     className={mediaClass}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
+                    src={project.src}
                     poster={project.poster}
-                  >
-                    <source src={project.src} type="video/mp4" />
-                  </video>
+                    active={!liteMotion && index === activeProject}
+                    load={!liteMotion}
+                  />
                 );
               }
 
@@ -1556,17 +1622,12 @@ export default function Home() {
                     aria-hidden="true"
                   >
                     {project.kind === "video" ? (
-                      <video
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        preload="auto"
+                      <DeferredVideo
+                        src={project.src}
                         poster={project.poster}
-                        disablePictureInPicture
-                      >
-                        <source src={project.src} type="video/mp4" />
-                      </video>
+                        active={!liteMotion}
+                        load={!liteMotion}
+                      />
                     ) : (
                       <Image
                         src={project.src}
@@ -1575,7 +1636,7 @@ export default function Home() {
                         sizes="(max-width: 760px) calc(100vw - 40px), 1px"
                       />
                     )}
-                    {project.kind === "video" && <span className="project-mobile-play">AUTO · 08S</span>}
+                    {project.kind === "video" && !liteMotion && <span className="project-mobile-play">AUTO · 08S</span>}
                   </div>
                   <span className="project-play"><Play size={12} fill="currentColor" aria-hidden="true" /></span>
                 </a>
