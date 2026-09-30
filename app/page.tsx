@@ -54,9 +54,7 @@ function shouldUseLiteMotion() {
 function shouldAutoplayVideo() {
   if (typeof window === "undefined") return false;
 
-  const navigatorWithHints = navigator as NavigatorPerformanceHints;
-  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    && navigatorWithHints.connection?.saveData !== true;
+  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 const audioPlayerCopy: Record<Locale, {
@@ -736,17 +734,26 @@ export default function Home() {
     let isHeroVisible = true;
     const syncPlayback = () => {
       if (shouldAutoplayVideo() && isHeroVisible && !document.hidden) {
+        video.muted = true;
         void video.play().catch(() => undefined);
       } else {
         video.pause();
       }
     };
 
+    const retryPlayback = () => {
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) syncPlayback();
+    };
+    video.addEventListener("loadeddata", retryPlayback);
+    video.addEventListener("canplay", retryPlayback);
+
     if (!("IntersectionObserver" in window)) {
       syncPlayback();
       document.addEventListener("visibilitychange", syncPlayback);
       return () => {
         document.removeEventListener("visibilitychange", syncPlayback);
+        video.removeEventListener("loadeddata", retryPlayback);
+        video.removeEventListener("canplay", retryPlayback);
         video.pause();
       };
     }
@@ -764,6 +771,8 @@ export default function Home() {
     return () => {
       observer.disconnect();
       document.removeEventListener("visibilitychange", syncPlayback);
+      video.removeEventListener("loadeddata", retryPlayback);
+      video.removeEventListener("canplay", retryPlayback);
       video.pause();
     };
   }, [liteMotion]);
@@ -1412,6 +1421,7 @@ export default function Home() {
               <video
                 ref={heroVideoRef}
                 className="hero-video"
+                autoPlay
                 loop
                 muted
                 playsInline
