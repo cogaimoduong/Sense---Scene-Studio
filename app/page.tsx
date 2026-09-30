@@ -45,7 +45,7 @@ function shouldUseLiteMotion() {
   const hasFewCores = navigator.hardwareConcurrency > 0
     && navigator.hardwareConcurrency <= 4;
 
-  return window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
     || navigatorWithHints.connection?.saveData === true
     || hasLowMemory
     || hasFewCores;
@@ -704,7 +704,6 @@ export default function Home() {
   useEffect(() => {
     const motionQueries = [
       window.matchMedia("(prefers-reduced-motion: reduce)"),
-      window.matchMedia("(pointer: coarse)"),
     ];
     const updateMotionMode = () => {
       const shouldUseLite = shouldUseLiteMotion();
