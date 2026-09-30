@@ -51,6 +51,14 @@ function shouldUseLiteMotion() {
     || hasFewCores;
 }
 
+function shouldAutoplayVideo() {
+  if (typeof window === "undefined") return false;
+
+  const navigatorWithHints = navigator as NavigatorPerformanceHints;
+  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    && navigatorWithHints.connection?.saveData !== true;
+}
+
 const audioPlayerCopy: Record<Locale, {
   soundtrack: string;
   tapToPlay: string;
@@ -727,7 +735,7 @@ export default function Home() {
 
     let isHeroVisible = true;
     const syncPlayback = () => {
-      if (!liteMotion && isHeroVisible && !document.hidden) {
+      if (shouldAutoplayVideo() && isHeroVisible && !document.hidden) {
         void video.play().catch(() => undefined);
       } else {
         video.pause();
@@ -1404,7 +1412,6 @@ export default function Home() {
               <video
                 ref={heroVideoRef}
                 className="hero-video"
-                autoPlay={!liteMotion}
                 loop
                 muted
                 playsInline
